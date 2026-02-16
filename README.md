@@ -20,3 +20,11 @@ First do `cargo install bacon`
 Then you can run `bacon run` to run the project with hot-reloading.
 
 (The default behaviour in `bacon run` is just to run the program, but i have changed it to hot-reload)
+
+## Database setup
+
+`cargo install sqlx` then `sqlx database create --database-url sqlite://app.db`
+
+This will create the app.db in your root where the data will live.
+
+Then run `sqlx migrate add Game`
