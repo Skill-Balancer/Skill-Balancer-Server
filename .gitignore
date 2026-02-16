@@ -1,1 +1,8 @@
 /target
+
+# database stuff
+app.db
+app.db-shm
+app.db-wal
+
+.env
