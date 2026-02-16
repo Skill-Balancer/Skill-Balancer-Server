@@ -1,7 +1,9 @@
 # Data-Collection-Rust-server
+
 A rust server for Data collection of any game for the purposes of AI.
 
-### Setup
+## Setup
+
 Make sure to have Rust installed, which you can do in the [rust developer handbook](<https://doc.rust-lang.org/stable/book/ch01-01-installation.html>)
 (Use the linux version in WSL if you are using windows!)
 
