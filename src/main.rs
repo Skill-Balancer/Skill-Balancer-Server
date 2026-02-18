@@ -1,16 +1,17 @@
-use axum::{Router, response::Html, routing::get};
 use ormlite::sqlite::SqliteConnection;
-use ormlite::{Connection, model::*};
+use ormlite::{Connection, Model};
+
+use axum::Router;
 use dotenv::dotenv;
 use std::env;
 
-#[derive(Model, Debug)]
-#[ormlite(table = "Game")]
-pub struct Game {
-    #[ormlite(primary_key)]
-    pub player_one_id: u32,
-    pub player_two_id: u32,
-}
+//importing routes and files.
+mod config;
+mod routes;
+
+// importing models
+mod models;
+use crate::models::game::Game;
 
 #[tokio::main]
 async fn main() {
@@ -19,26 +20,20 @@ async fn main() {
     let mut conn = SqliteConnection::connect(&db).await.unwrap();
 
     {
-        let _game = (Game {
+        let _game = Game {
             player_one_id: 1,
             player_two_id: 2,
-        })
+        }
         .insert(&mut conn)
         .await;
     }
 
-    let used = Game::select().fetch_all(&mut conn).await.unwrap();
+    let game = Game::select().fetch_all(&mut conn).await.unwrap();
 
-    let app = Router::new().route(
-        "/",
-        get(Html(
-            "
-            <h1>Hello!</h1>
-            <p>Hi from Rust</p>
-            ",
-        )),
-    );
-    println!("Player one: {:?}", used);
+    let app = Router::new().merge(routes::root::get_root());
+
+    println!("Player one: {:?}", game);
+
     let listener = tokio::net::TcpListener::bind("0.0.0.0:3000").await.unwrap();
     axum::serve(listener, app).await.unwrap();
 }
