@@ -5,6 +5,7 @@ use axum::Router;
 use dotenv::dotenv;
 use std::env;
 use serde_json::{json, Value};
+use serde::{Deserialize, Serialize};
 
 //importing routes and files.
 mod config;
