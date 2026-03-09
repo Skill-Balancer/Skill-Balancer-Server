@@ -11,6 +11,8 @@ dependencies = [
  "burn",
  "burn-rl",
  "dotenv",
+ "serde",
+ "serde_json",
  "tokio",
 ]
 

@@ -1,5 +1,10 @@
+mod profile;
+
+use axum::{Router, response::Html, routing::get};
 use axum::Router;
 use dotenv::dotenv;
+use std::env;
+use serde_json::{json, Value};
 
 //importing routes and files.
 mod config;
@@ -7,6 +12,23 @@ mod routes;
 
 // importing models
 mod models;
+
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+struct Transition {
+    id: String,
+    session_id: String,
+    step: i64,
+    state: Value,
+    action: Value,
+    reward: f64,
+    next_state: Value,
+    done: bool,
+    timestamp: String,
+}
+
+
+
 
 #[tokio::main]
 async fn main() {
