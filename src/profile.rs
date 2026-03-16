@@ -1,8 +1,8 @@
 use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone,Serialize, Deserialize)]
 pub struct Profile {
-    pub id: String,
+    pub profile_id: String,
     pub name: String,
     pub game_id: String,
     pub version: String,
