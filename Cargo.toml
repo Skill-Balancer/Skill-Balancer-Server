@@ -1,3 +1,10 @@
+[workspace]
+members = [".", "burn-rl"]
+
+[workspace.dependencies]
+burn = { version = "0.20", default-features = false, features = ["ndarray", "autodiff"] }
+serde = "1"
+
 [package]
 name = "Data-Collection-Rust-server"
 version = "0.1.0"
@@ -9,4 +16,5 @@ bacon = "3.22.0"
 tokio = { version = "1", features = ["full"] }
 ormlite = { version = "0.24.3", features = ["sqlite"] }
 dotenv = "0.15.0"
-
+burn-rl = { path = "./burn-rl" }
+burn = { workspace = true }
