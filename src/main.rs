@@ -1,77 +1,21 @@
-mod profile;
 
-use axum::{Router, response::Html, routing::{get,post}, Json, Error, http::StatusCode, response::{IntoResponse, Response}, extract::{Path, State}};
+
+use axum::{extract::State, http::StatusCode, response::{IntoResponse, Response}, routing::{get, post}, Json, Router};
 use dotenv::dotenv;
-use std::{env,collections::HashMap, sync::Arc};
-use serde_json::{json, Value};
+use std::{collections::HashMap, sync::Arc};
+use serde_json::Value;
 use serde::{Deserialize, Serialize};
-use crate::profile::Profile;
+use models::profile::Profile;
 use tokio::sync::{Mutex, RwLock};
+use crate::models::createTransitionResponse::CreateTransitionResponse;
+use crate::models::transition::Transition;
 
 //importing routes and files.
 mod config;
 mod routes;
-
 // importing models
 mod models;
 
-#[derive(Debug, Serialize, Deserialize)]
-struct Transition {
-    profile_id: String,
-    step: i64,
-    state: Value,
-    action: Value,
-    reward: f64,
-    next_state: Value,
-    done: bool,
-}
-
-#[derive(Debug, Serialize, Deserialize)]
-struct CreateProfileRequest {
-    profile_id: String,
-    name: String,
-    game_id: String,
-    version: String,
-    description: Option<String>,
-    environment: Value,
-    states: Value,
-    actions: Value,
-    reward: Value,
-    training: Value,
-    output: Value,
-}
-
-#[derive(Debug, Serialize, Deserialize)]
-struct CreateSessionRequest {
-    profile_id: String,
-    game_id: String,
-    player_id: Option<String>,
-    opponent_type: String,
-    metadata: Value,
-}
-
-#[derive(Debug, Serialize, Deserialize)]
-struct TransitionItem {
-    step: i64,
-    state: Value,
-    action: Value,
-    reward: f64,
-    next_state: Value,
-    done: bool,
-    timestamp: String,
-}
-
-#[derive(Debug, Serialize, Deserialize)]
-struct CreateTransitionsRequest {
-    transitions: Vec<TransitionItem>,
-}
-
-#[derive(Debug, Serialize, Deserialize)]
-struct RecommendationRequest {
-    profile_id: String,
-    session_id: Option<String>,
-    state: Value,
-}
 
 #[derive(Debug, Serialize, Deserialize)]
 struct RecommendationResponse {
@@ -127,7 +71,7 @@ async fn main() {
 
   async fn create_profile(
       State(state): State<AppState>,
-      Json(payload): Json<CreateProfileRequest>,
+      Json(payload): Json<Profile>,
   ) -> ApiResult<Profile> {
       let mut profiles = state.profiles.write().await;
 
@@ -164,7 +108,7 @@ async fn main() {
 
     async fn create_transition(
         State(state): State<AppState>,
-        Json(payload): Json<CreateTransitionRequest>,
+        Json(payload): Json<Transition>,
     ) -> ApiResult<CreateTransitionResponse> {
         let profiles = state.profiles.read().await;
 
