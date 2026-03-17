@@ -16,5 +16,3 @@ bacon = "3.22.0"
 tokio = { version = "1", features = ["full"] }
 ormlite = { version = "0.24.3", features = ["sqlite"] }
 dotenv = "0.15.0"
-burn-rl = { path = "./burn-rl" }
-burn = { workspace = true }
