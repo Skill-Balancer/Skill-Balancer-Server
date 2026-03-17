@@ -177,7 +177,7 @@ mod tests {
         type ActionType = TestAction;
         type RewardType = ElemType;
 
-        fn new(_visualized: bool) -> Self {
+        fn new() -> Self {
             unimplemented!()
         }
 
