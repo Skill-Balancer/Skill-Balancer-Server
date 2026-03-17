@@ -15,11 +15,43 @@ mod routes;
 // importing models
 mod models;
 
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize)]
 struct Transition {
-    id: String,
-    session_id: String,
+    profile_id: String,
+    step: i64,
+    state: Value,
+    action: Value,
+    reward: f64,
+    next_state: Value,
+    done: bool,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+struct CreateProfileRequest {
+    profile_id: String,
+    name: String,
+    game_id: String,
+    version: String,
+    description: Option<String>,
+    environment: Value,
+    states: Value,
+    actions: Value,
+    reward: Value,
+    training: Value,
+    output: Value,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+struct CreateSessionRequest {
+    profile_id: String,
+    game_id: String,
+    player_id: Option<String>,
+    opponent_type: String,
+    metadata: Value,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+struct TransitionItem {
     step: i64,
     state: Value,
     action: Value,
@@ -28,8 +60,6 @@ struct Transition {
     done: bool,
     timestamp: String,
 }
-
-
 
 #[derive(Debug, Serialize, Deserialize)]
 struct CreateTransitionsRequest {
@@ -81,7 +111,7 @@ type ApiResult<T> = Result<Json<T>, ApiError>;
 #[tokio::main]
 async fn main() {
     dotenv().ok();
-    
+
     let state = AppState{
         profiles: Arc::new(RwLock::new(HashMap::new())),
         transitions: Arc::new(Mutex::new(Vec::new())),
@@ -130,5 +160,39 @@ async fn main() {
         let profiles = state.profiles.read().await;
         let values = profiles.values().cloned().collect::<Vec<_>>();
         Ok(Json(values))
+    }
+
+    async fn create_transition(
+        State(state): State<AppState>,
+        Json(payload): Json<CreateTransitionRequest>,
+    ) -> ApiResult<CreateTransitionResponse> {
+        let profiles = state.profiles.read().await;
+
+        if !profiles.contains_key(&payload.profile_id) {
+            return Err(ApiError::new(
+                StatusCode::BAD_REQUEST,
+                "profile_id does not exist",
+            ));
+        }
+        drop(profiles);
+
+        let transition = Transition {
+            profile_id: payload.profile_id.clone(),
+            step: payload.step,
+            state: payload.state,
+            action: payload.action,
+            reward: payload.reward,
+            next_state: payload.next_state,
+            done: payload.done,
+        };
+        let response = CreateTransitionResponse {
+            profile_id: transition.profile_id.clone(),
+            step: transition.step,
+            message: "Transition stored successfully".to_string(),
+        };
+        let mut transitions = state.transitions.lock().await;
+        transitions.push(transition);
+
+        Ok(Json(response))
     }
 }
