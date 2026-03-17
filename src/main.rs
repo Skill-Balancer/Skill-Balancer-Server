@@ -32,15 +32,6 @@ struct ApiError {
     message: String,
 }
 
-impl ApiError {
-    fn new(status: StatusCode, message: impl Into<String>) -> Self {
-        Self {
-            status,
-            message: message.into(),
-        }
-    }
-}
-
 impl IntoResponse for ApiError {
     fn into_response(self) -> Response {
         let body = Json(serde_json::json!({
@@ -49,8 +40,6 @@ impl IntoResponse for ApiError {
         (self.status, body).into_response()
     }
 }
-
-type ApiResult<T> = Result<Json<T>, ApiError>;
 
 #[tokio::main]
 async fn main() {
@@ -72,14 +61,14 @@ async fn main() {
   async fn create_profile(
       State(state): State<AppState>,
       Json(payload): Json<Profile>,
-  ) -> ApiResult<Profile> {
+  ) -> Result<Json<Profile>, ApiError> {
       let mut profiles = state.profiles.write().await;
 
       if profiles.contains_key(&payload.profile_id) {
-          return Err(ApiError::new(
-              StatusCode::BAD_REQUEST,
-              "Profile with that id already exists",
-          ));
+          return Err(ApiError {
+              status: StatusCode::BAD_REQUEST,
+              message: "Profile with that id already exists".to_string(),
+          });
       }
 
       let profile = Profile {
@@ -100,7 +89,7 @@ async fn main() {
   }
     async fn list_profiles(
         State(state): State<AppState>,
-    ) -> ApiResult<Vec<Profile>> {
+    ) -> Result<Json<Vec<Profile>>, ApiError> {
         let profiles = state.profiles.read().await;
         let values = profiles.values().cloned().collect::<Vec<_>>();
         Ok(Json(values))
@@ -109,14 +98,14 @@ async fn main() {
     async fn create_transition(
         State(state): State<AppState>,
         Json(payload): Json<Transition>,
-    ) -> ApiResult<CreateTransitionResponse> {
+    ) -> Result<Json<CreateTransitionResponse>, ApiError> {
         let profiles = state.profiles.read().await;
 
         if !profiles.contains_key(&payload.profile_id) {
-            return Err(ApiError::new(
-                StatusCode::BAD_REQUEST,
-                "profile_id does not exist",
-            ));
+            return Err(ApiError {
+                status: StatusCode::BAD_REQUEST,
+                message: "Profile with that id does not exist".to_string(),
+            });
         }
         drop(profiles);
 
