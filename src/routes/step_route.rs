@@ -25,16 +25,11 @@ async fn create_transition(
 
     let transition = Transition {
         profile_id: payload.profile_id.clone(),
-        step: payload.step,
         state: payload.state,
-        action: payload.action,
         reward: payload.reward,
-        next_state: payload.next_state,
-        done: payload.done,
     };
     let response = CreateTransitionResponse {
         profile_id: transition.profile_id.clone(),
-        step: transition.step,
         message: "Transition stored successfully".to_string(),
         
     };
