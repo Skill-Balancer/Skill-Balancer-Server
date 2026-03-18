@@ -20,6 +20,8 @@ jobs:
         with:
           install: true
           cache: true
+      - name: Install fmt
+        run: rustup component add rustfmt
       - name: check formatting
         run: cargo fmt --check
       - name: Build
