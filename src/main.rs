@@ -13,9 +13,9 @@ async fn main() {
     dotenv().ok();
 
     let app = Router::<()>::new()
-        .nest("/", routes::root::get_root())
-        .nest("/config", routes::config_route::config_route())
-        .nest("/step", routes::step_route::step_route());
+        .merge(routes::root::get_root())
+        .merge(routes::config_route::config_route())
+        .merge(routes::step_route::step_route());
 
     let listener = tokio::net::TcpListener::bind("0.0.0.0:3000").await.unwrap();
     axum::serve(listener, app).await.unwrap();
