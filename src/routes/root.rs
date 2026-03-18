@@ -1,5 +1,5 @@
-use axum::{Router, response::Html, routing::get};
 use crate::AppState;
+use axum::{Router, response::Html, routing::get};
 
 pub fn get_root() -> Router<AppState> {
     return Router::new().route(

@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
-use serde_json::{json, Value};
-#[derive(Debug, Clone,Serialize, Deserialize)]
+use serde_json::{Value, json};
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Profile {
     pub profile_id: String,
     pub name: String,
@@ -10,4 +10,3 @@ pub struct Profile {
     pub states: Value,
     pub actions: Value,
 }
-

@@ -1,12 +1,12 @@
-use axum::{Router, http::StatusCode, routing::post, Json};
-use axum::extract::State;
-use crate::{AppState};
+use crate::AppState;
+use crate::models::apiError::ApiError;
 use crate::models::createTransitionResponse::CreateTransitionResponse;
 use crate::models::transition::Transition;
-use crate::models::apiError::ApiError;
+use axum::extract::State;
+use axum::{Json, Router, http::StatusCode, routing::post};
 
 pub fn step_route() -> Router<AppState> {
-     Router::new().route("/step", post(create_transition))
+    Router::new().route("/step", post(create_transition))
 }
 
 async fn create_transition(
@@ -31,7 +31,6 @@ async fn create_transition(
     let response = CreateTransitionResponse {
         profile_id: transition.profile_id.clone(),
         message: "Transition stored successfully".to_string(),
-        
     };
     let mut transitions = state.transitions.lock().await;
     transitions.push(transition);
