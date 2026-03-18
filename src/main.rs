@@ -1,21 +1,49 @@
-use axum::Router;
+use crate::models::transition::Transition;
+use axum::{
+    Json, Router,
+    extract::State,
+    http::StatusCode,
+    response::{IntoResponse, Response},
+    routing::{get, post},
+};
 use dotenv::dotenv;
+use models::profile::Profile;
+use serde::{Deserialize, Serialize};
+use serde_json::Value;
+use std::{collections::HashMap, sync::Arc};
+use tokio::sync::{Mutex, RwLock};
 
 //importing routes and files.
 mod config;
 mod routes;
-
 // importing models
 mod models;
+
+#[derive(Debug, Serialize, Deserialize)]
+struct RecommendationResponse {
+    recommendation: Value,
+}
+#[derive(Clone)]
+struct AppState {
+    profiles: Arc<RwLock<HashMap<String, Profile>>>,
+    transitions: Arc<Mutex<Vec<Transition>>>,
+}
 
 #[tokio::main]
 async fn main() {
     dotenv().ok();
 
-    let app = Router::<()>::new()
+    let state = AppState {
+        profiles: Arc::new(RwLock::new(HashMap::new())),
+        transitions: Arc::new(Mutex::new(Vec::new())),
+    };
+
+    let app = Router::new()
         .merge(routes::root::get_root())
         .merge(routes::config_route::config_route())
-        .merge(routes::step_route::step_route());
+        .merge(routes::step_route::step_route())
+        .merge(routes::all_config_route::all_config_route())
+        .with_state(state);
 
     let listener = tokio::net::TcpListener::bind("0.0.0.0:3000").await.unwrap();
     axum::serve(listener, app).await.unwrap();
