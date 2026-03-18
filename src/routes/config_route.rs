@@ -27,12 +27,8 @@ async fn create_profile(
         game_id: payload.game_id,
         version: payload.version,
         description: payload.description,
-        environment: payload.environment,
         states: payload.states,
         actions: payload.actions,
-        reward: payload.reward,
-        training: payload.training,
-        output: payload.output,
     };
     profiles.insert(profile.profile_id.clone(), profile.clone());
     Ok(Json(profile))

@@ -7,11 +7,7 @@ pub struct Profile {
     pub game_id: String,
     pub version: String,
     pub description: Option<String>,
-    pub environment: Value,
     pub states: Value,
     pub actions: Value,
-    pub reward: Value,
-    pub training: Value,
-    pub output: Value,
 }
 
