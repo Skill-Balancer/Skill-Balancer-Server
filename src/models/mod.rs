@@ -5,3 +5,4 @@ pub mod state;
 pub mod transition;
 pub mod profile;
 pub mod createTransitionResponse;
+pub mod apiError;

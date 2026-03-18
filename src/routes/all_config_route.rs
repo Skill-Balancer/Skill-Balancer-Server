@@ -1,8 +1,9 @@
 use axum::extract::State;
 use axum::{Json, Router};
 use axum::routing::get;
-use crate::{ApiError, AppState};
+use crate::{AppState};
 use crate::models::profile::Profile;
+use crate::models::apiError::ApiError;
 
 pub fn all_config_route() -> Router<AppState> {
     Router::new().route("/config/all", get(list_profiles))

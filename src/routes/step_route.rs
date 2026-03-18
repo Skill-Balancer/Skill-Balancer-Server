@@ -1,8 +1,9 @@
 use axum::{Router, http::StatusCode, routing::post, Json};
 use axum::extract::State;
-use crate::{ApiError, AppState};
+use crate::{AppState};
 use crate::models::createTransitionResponse::CreateTransitionResponse;
 use crate::models::transition::Transition;
+use crate::models::apiError::ApiError;
 
 pub fn step_route() -> Router<AppState> {
      Router::new().route("/step", post(create_transition))

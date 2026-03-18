@@ -1,7 +1,8 @@
 use axum::{Router, http::StatusCode, routing::post, Json};
 use axum::extract::State;
-use crate::{ApiError, AppState};
+use crate::{AppState};
 use crate::models::profile::Profile;
+use crate::models::apiError::ApiError;
 
 pub fn config_route() -> Router<AppState> {
     Router::new().route("/config", post(create_profile))
