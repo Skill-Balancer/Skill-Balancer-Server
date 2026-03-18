@@ -1,11 +1,20 @@
 use burn::{
     Tensor,
-    module::Module,
+    module::{AutodiffModule, Module},
     nn::{Initializer, Linear, LinearConfig},
+    optim::{AdamW, adaptor::OptimizerAdaptor},
     prelude::Backend,
-    tensor::activation::{relu, softmax},
+    tensor::{
+        activation::{relu, softmax},
+        backend::AutodiffBackend,
+    },
 };
-use burn_rl::{agent::PPOOutput, base::Model};
+use burn_rl::{
+    agent::{PPOModel, PPOOutput, PPOTrainingConfig},
+    base::{Environment, Memory, Model},
+};
+
+use crate::models::environment::GameEnv;
 
 #[derive(Module, Debug)]
 pub struct Net<B: Backend> {
@@ -44,4 +53,17 @@ impl<B: Backend> Model<B, Tensor<B, 2>, PPOOutput<B>, Tensor<B, 2>> for Net<B> {
         let layer_0_output = relu(self.linear.forward(input));
         softmax(self.linear_actor.forward(layer_0_output.clone()), 1)
     }
+}
+
+const MEMORY_SIZE: usize = 512;
+const DENSE_SIZE: usize = 128;
+
+pub const TRAIN_EVERY: usize = MEMORY_SIZE;
+
+pub struct PpoTrainer<B: AutodiffBackend> {
+    pub model: Net<B>,
+    pub optimizer: OptimizerAdaptor<AdamW, Net<B>, B>,
+    pub memory: Memory<GameEnv, B, MEMORY_SIZE>,
+    pub config: PPOTrainingConfig,
+    pub steps: usize,
 }
