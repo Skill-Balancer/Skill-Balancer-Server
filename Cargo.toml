@@ -15,3 +15,5 @@ axum = "0.8.8"
 bacon = "3.22.0"
 tokio = { version = "1", features = ["full"] }
 dotenv = "0.15.0"
+burn-rl = { path = "burn-rl" }
+burn = { workspace = true }
