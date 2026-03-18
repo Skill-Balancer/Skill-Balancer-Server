@@ -7,7 +7,6 @@ use serde_json::Value;
 use serde::{Deserialize, Serialize};
 use models::profile::Profile;
 use tokio::sync::{Mutex, RwLock};
-use crate::models::createTransitionResponse::CreateTransitionResponse;
 use crate::models::transition::Transition;
 
 //importing routes and files.
@@ -50,82 +49,14 @@ async fn main() {
         transitions: Arc::new(Mutex::new(Vec::new())),
     };
 
-    let app = Router::<()>::new()
+    let app = Router::new()
         .merge(routes::root::get_root())
         .merge(routes::config_route::config_route())
-        .merge(routes::step_route::step_route());
+        .merge(routes::step_route::step_route())
+        .merge(routes::all_config_route::all_config_route()).with_state(state);
 
     let listener = tokio::net::TcpListener::bind("0.0.0.0:3000").await.unwrap();
     axum::serve(listener, app).await.unwrap();
 
-  async fn create_profile(
-      State(state): State<AppState>,
-      Json(payload): Json<Profile>,
-  ) -> Result<Json<Profile>, ApiError> {
-      let mut profiles = state.profiles.write().await;
 
-      if profiles.contains_key(&payload.profile_id) {
-          return Err(ApiError {
-              status: StatusCode::BAD_REQUEST,
-              message: "Profile with that id already exists".to_string(),
-          });
-      }
-
-      let profile = Profile {
-          profile_id: payload.profile_id,
-          name: payload.name,
-          game_id: payload.game_id,
-          version: payload.version,
-          description: payload.description,
-          environment: payload.environment,
-          states: payload.states,
-          actions: payload.actions,
-          reward: payload.reward,
-          training: payload.training,
-          output: payload.output,
-      };
-      profiles.insert(profile.profile_id.clone(), profile.clone());
-      Ok(Json(profile))
-  }
-    async fn list_profiles(
-        State(state): State<AppState>,
-    ) -> Result<Json<Vec<Profile>>, ApiError> {
-        let profiles = state.profiles.read().await;
-        let values = profiles.values().cloned().collect::<Vec<_>>();
-        Ok(Json(values))
-    }
-
-    async fn create_transition(
-        State(state): State<AppState>,
-        Json(payload): Json<Transition>,
-    ) -> Result<Json<CreateTransitionResponse>, ApiError> {
-        let profiles = state.profiles.read().await;
-
-        if !profiles.contains_key(&payload.profile_id) {
-            return Err(ApiError {
-                status: StatusCode::BAD_REQUEST,
-                message: "Profile with that id does not exist".to_string(),
-            });
-        }
-        drop(profiles);
-
-        let transition = Transition {
-            profile_id: payload.profile_id.clone(),
-            step: payload.step,
-            state: payload.state,
-            action: payload.action,
-            reward: payload.reward,
-            next_state: payload.next_state,
-            done: payload.done,
-        };
-        let response = CreateTransitionResponse {
-            profile_id: transition.profile_id.clone(),
-            step: transition.step,
-            message: "Transition stored successfully".to_string(),
-        };
-        let mut transitions = state.transitions.lock().await;
-        transitions.push(transition);
-
-        Ok(Json(response))
-    }
 }
