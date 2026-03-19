@@ -1,25 +1,29 @@
-use burn_rl::base::{ElemType, environment::Environment};
+use burn_rl::base::{ElemType, Snapshot, environment::Environment};
 
 use crate::models::{action::GameAction, state::GameState};
 
 #[derive(Debug)]
-pub struct GameValues {}
+pub struct GameValues {
+    pub data: [ElemType; 4],
+    pub reward: ElemType,
+}
 
 
 #[derive(Debug)]
 pub struct GameEnv {
     state: GameState,
-    reward: f32
+    reward: ElemType,
 }
 
 
 
 impl GameEnv {
-    // The intention of this function is to set this data to the data that comes from the HTTP request
-    // from the client. I.E we need to use this function in main.
-    pub fn setDataFromClient(&mut self, result: GameValues)
-        self.state = GameState::from(result);
-        self.state = GameState::from(reward);
+    // Set the data from HTTP from the client.
+    // This isn't used yet in main
+    pub fn set_data_from_client(&mut self, input: GameValues) {
+        self.state = GameState::from(input.data);
+        self.reward = input.reward;
+    }
 }
 
 
@@ -29,16 +33,19 @@ impl Environment for GameEnv {
     type RewardType = ElemType;
 
     fn new() -> Self {
-        self.state = GameEnv::new();
+        Self {
+            state: GameState::new(),
+            reward: 0.0,
+        }
     }
 
     fn state(&self) -> Self::StateType {
         self.state
     }
 
-    fn reset(&mut self) -> burn_rl::base::Snapshot<Self> {
-        self.state = GameState::new(); 
-        Snapshot::new(self.state, 0, false);
+    fn reset(&mut self) -> Snapshot<Self> {
+        self.state = GameState::new();
+        Snapshot::new(self.state.clone(), 0.0, false)
     }
 
 
@@ -47,6 +54,6 @@ impl Environment for GameEnv {
     // We are keeping action because it's a part of the function signature so it might add some errors
     // if we remove it
     fn step(&mut self, action: Self::ActionType) -> burn_rl::base::Snapshot<Self> {
-        Snapshot::new(self.state, self.reward, false);
+        Snapshot::new(self.state, self.reward, false)
     }
 }
