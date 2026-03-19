@@ -41,7 +41,8 @@ impl Environment for GameEnv {
 
     fn reset(&mut self) -> Snapshot<Self> {
         self.state = GameState::new();
-        Snapshot::new(self.state.clone(), 0.0, false)
+        self.reward = 0.0;
+        Snapshot::new(self.state.clone(), self.reward, false)
     }
 
     // All this does is send a snapshot of the current state with the reward and set the
