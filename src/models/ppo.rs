@@ -23,6 +23,8 @@ pub struct Net<B: Backend> {
     linear_critic: Linear<B>,
 }
 
+impl<B: Backend> PPOModel<B> for Net<B> {}
+
 impl<B: Backend> Net<B> {
     pub fn new(input_size: usize, dense_size: usize, output_size: usize) -> Self {
         let initializer = Initializer::XavierUniform { gain: 1.0 };
