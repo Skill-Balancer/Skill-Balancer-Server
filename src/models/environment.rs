@@ -8,14 +8,11 @@ pub struct GameValues {
     pub reward: ElemType,
 }
 
-
 #[derive(Debug)]
 pub struct GameEnv {
     state: GameState,
     reward: ElemType,
 }
-
-
 
 impl GameEnv {
     // Set the data from HTTP from the client.
@@ -25,7 +22,6 @@ impl GameEnv {
         self.reward = input.reward;
     }
 }
-
 
 impl Environment for GameEnv {
     type StateType = GameState;
@@ -47,7 +43,6 @@ impl Environment for GameEnv {
         self.state = GameState::new();
         Snapshot::new(self.state.clone(), 0.0, false)
     }
-
 
     // All this does is send a snapshot of the current state with the reward and set the
     // DONE boolean to false

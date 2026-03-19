@@ -22,7 +22,9 @@ impl From<StateData> for GameState {
 // Figure out what initial values are good for implementing the gamestate with.
 impl GameState {
     pub fn new() -> Self {
-        Self { data: [0.5; STATE_SIZE] }
+        Self {
+            data: [0.5; STATE_SIZE],
+        }
     }
 }
 
