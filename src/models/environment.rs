@@ -10,8 +10,8 @@ pub struct GameValues {
 
 #[derive(Debug)]
 pub struct GameEnv {
-    state: GameState,
-    reward: ElemType,
+    pub state: GameState,
+    pub reward: ElemType,
 }
 
 impl GameEnv {

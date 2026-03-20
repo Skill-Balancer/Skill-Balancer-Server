@@ -9,7 +9,7 @@ type StateData = [ElemType; STATE_SIZE];
 // data has to be public so environment can access it
 #[derive(Debug, Copy, Clone)]
 pub struct GameState {
-    pub(crate) data: StateData,
+    pub data: StateData,
 }
 
 impl From<StateData> for GameState {

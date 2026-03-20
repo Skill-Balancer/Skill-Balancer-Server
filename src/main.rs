@@ -1,4 +1,4 @@
-use crate::models::transition::Transition;
+use crate::network::transition::Transition;
 use axum::{
     Json, Router,
     extract::State,
@@ -7,7 +7,7 @@ use axum::{
     routing::{get, post},
 };
 use dotenv::dotenv;
-use models::profile::Profile;
+use network::profile::Profile;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use std::{collections::HashMap, sync::Arc};
@@ -18,6 +18,7 @@ mod config;
 mod routes;
 // importing models
 mod models;
+mod network;
 
 #[derive(Debug, Serialize, Deserialize)]
 struct RecommendationResponse {
