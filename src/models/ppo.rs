@@ -106,11 +106,16 @@ impl<B: AutodiffBackend> PpoTrainer<B> {
             );
             self.steps += 1;
 
-            if self.steps % TRAIN_EVERY == 0 {}
+            if self.steps % TRAIN_EVERY == 0 {
+                // self.train
+                todo!();
+            }
         }
         self.last_state = Some(env.state.clone());
         self.action = PPO::<GameEnv, B, Net<B>>::react_with_model(&env.state, &self.model);
     }
 
-    fn train(&self) {}
+    fn train(&self) {
+        todo!(); // Use PPO<>::train function (See example)
+    }
 }
