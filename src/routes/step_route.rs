@@ -1,7 +1,7 @@
 use crate::AppState;
-use crate::models::apiError::ApiError;
-use crate::models::createTransitionResponse::CreateTransitionResponse;
-use crate::models::transition::Transition;
+use crate::network::api_error::ApiError;
+use crate::network::create_transition_response::CreateTransitionResponse;
+use crate::network::transition::Transition;
 use axum::extract::State;
 use axum::{Json, Router, http::StatusCode, routing::post};
 
