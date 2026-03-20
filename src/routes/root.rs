@@ -1,13 +1,13 @@
 use crate::AppState;
+use askama::Template;
 use axum::{Router, response::Html, routing::get};
 
+#[derive(Template)]
+#[template(path = "root.html")]
+pub struct HelloTemplate<'a> {
+    pub name: &'a str,
+}
 pub fn get_root() -> Router<AppState> {
-    return Router::new().route(
-        "/",
-        get(Html(
-            "
-        <h1>Hello!</h1>
-        <p>Hi from Rust</p>",
-        )),
-    );
+    let body = HelloTemplate { name: "World" }.render().unwrap();
+    return Router::new().route("/", get(Html(body)));
 }
