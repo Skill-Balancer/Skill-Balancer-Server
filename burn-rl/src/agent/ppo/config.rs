@@ -1,6 +1,8 @@
 use crate::base::ElemType;
 use burn::grad_clipping::GradientClippingConfig;
+use serde::{Deserialize, Serialize};
 
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct PPOTrainingConfig {
     pub gamma: ElemType,
     pub lambda: ElemType,

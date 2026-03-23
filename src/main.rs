@@ -1,15 +1,7 @@
 use crate::network::transition::Transition;
-use axum::{
-    Json, Router,
-    extract::State,
-    http::StatusCode,
-    response::{IntoResponse, Response},
-    routing::{get, post},
-};
+use axum::Router;
 use dotenv::dotenv;
 use network::profile::Profile;
-use serde::{Deserialize, Serialize};
-use serde_json::Value;
 use std::{collections::HashMap, sync::Arc};
 use tokio::sync::{Mutex, RwLock};
 use tower_http::services::ServeDir;
@@ -23,13 +15,9 @@ mod models;
 mod network;
 mod storage;
 
-#[derive(Debug, Serialize, Deserialize)]
-struct RecommendationResponse {
-    recommendation: Value,
-}
 #[derive(Clone)]
 struct AppState {
-    profiles: Arc<RwLock<HashMap<String, Profile>>>,
+    profiles: Arc<RwLock<HashMap<usize, Profile>>>,
     transitions: Arc<Mutex<Vec<Transition>>>,
 }
 

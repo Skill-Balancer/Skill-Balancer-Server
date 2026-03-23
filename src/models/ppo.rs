@@ -1,6 +1,6 @@
 use burn::{
     Tensor,
-    module::{AutodiffModule, Module},
+    module::Module,
     nn::{Initializer, Linear, LinearConfig},
     optim::{AdamW, AdamWConfig, adaptor::OptimizerAdaptor},
     prelude::Backend,
@@ -11,9 +11,8 @@ use burn::{
 };
 use burn_rl::{
     agent::{PPO, PPOModel, PPOOutput, PPOTrainingConfig},
-    base::{Environment, Memory, Model},
+    base::{Memory, Model},
 };
-use tokio::runtime::TryCurrentError;
 
 use crate::models::{action::GameAction, environment::GameEnv, state::GameState};
 
@@ -65,7 +64,7 @@ const MEMORY_SIZE: usize = 512;
 
 pub const TRAIN_EVERY: usize = MEMORY_SIZE;
 
-pub struct PpoTrainer<B: AutodiffBackend> {
+pub struct PPOTrainer<B: AutodiffBackend> {
     pub model: Net<B>,
     pub optimizer: OptimizerAdaptor<AdamW, Net<B>, B>,
     pub memory: Memory<GameEnv, B, MEMORY_SIZE>,
@@ -75,9 +74,8 @@ pub struct PpoTrainer<B: AutodiffBackend> {
     action: Option<GameAction>,
 }
 
-impl<B: AutodiffBackend> PpoTrainer<B> {
-    pub fn new() -> Self {
-        let config = PPOTrainingConfig::default();
+impl<B: AutodiffBackend> PPOTrainer<B> {
+    pub fn new(config: PPOTrainingConfig) -> Self {
         Self {
             model: Net::new(INPUT_SIZE, DENSE_SIZE, OUTPUT_SIZE),
             optimizer: AdamWConfig::new()
