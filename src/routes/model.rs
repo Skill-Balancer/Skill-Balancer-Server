@@ -15,11 +15,9 @@ pub fn save_model_route() -> Router<AppState> {
 
 async fn handle_save_model() -> impl IntoResponse {
     type Back = Autodiff<NdArray<ElemType>>;
-    let model = PpoTrainer::<Back>::new().model; // TODO: Use the actual model instead of creating a
-    // new one
+    let model = PpoTrainer::<Back>::new().model; // TODO: Use the actual model instead of creating a new one
     let name = "model".to_string();
     save_model(model, &name);
-    // Send url path back in json
     (
         StatusCode::NOT_IMPLEMENTED,
         Json(json!({
@@ -35,8 +33,8 @@ pub fn load_model_route() -> Router<AppState> {
 
 async fn handle_load_model() -> impl IntoResponse {
     type Back = Autodiff<NdArray<ElemType>>;
-    let model = PpoTrainer::<Back>::new().model; // TODO: Use the actual model instead of creating a
-    let name = "model".to_string(); // new one
+    let model = PpoTrainer::<Back>::new().model; // TODO: Use the actual model instead of creating a new one
+    let name = "model".to_string();
     let device = NdArrayDevice::default();
     let model = load_model(model, &name, &device);
     (
@@ -53,7 +51,7 @@ async fn handle_export_model(Path(name): Path<String>) -> impl IntoResponse {
     let mut store = SafetensorsStore::from_file(format!("{}/{}.safetensors", models_dir(), name))
         .overwrite(true);
     type Back = Autodiff<NdArray<ElemType>>;
-    let model = PpoTrainer::<Back>::new().model; // TODO: Use the actual model instead of creating a
+    let model = PpoTrainer::<Back>::new().model; // TODO: Use the actual model instead of creating a new one
     let res = model.save_into(&mut store);
     match res {
         Ok(_) => (
