@@ -10,3 +10,11 @@ app.db-wal
 # Mise
 mise.local.toml
 .mise.local.toml
+
+# Server storage
+/data
+
+# Environment
+.env
+.env.*
+!.env.example

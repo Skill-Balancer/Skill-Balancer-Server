@@ -19,6 +19,7 @@ mod routes;
 // importing models
 mod models;
 mod network;
+mod storage;
 
 #[derive(Debug, Serialize, Deserialize)]
 struct RecommendationResponse {
@@ -44,6 +45,7 @@ async fn main() {
         .merge(routes::config_route::config_route())
         .merge(routes::step_route::step_route())
         .merge(routes::all_config_route::all_config_route())
+        .merge(routes::save_model::save_model())
         .with_state(state);
 
     println!("Server running on http://localhost:3000");
