@@ -13,9 +13,8 @@ use crate::{
     models::ppo::{Net, PpoTrainer},
     storage::utils::create_dir,
 };
-
 pub struct CheckPoint {
-    model_id: String,
+    pub model_id: String,
 }
 
 impl CheckPoint {
@@ -85,4 +84,34 @@ impl CheckPoint {
             Err(e) => Err(format!("Failed to export model: {}", e)),
         }
     }
+}
+
+pub fn list_saves() -> Vec<CheckPoint> {
+    let mut saves = Vec::new();
+    if let Ok(entries) = std::fs::read_dir(saves_dir()) {
+        for entry in entries.flatten() {
+            if let Some(file_name) = entry.file_name().to_str() {
+                if file_name.ends_with(".mpk") {
+                    let model_id = file_name.trim_end_matches(".mpk").to_string();
+                    saves.push(CheckPoint::new(model_id));
+                }
+            }
+        }
+    }
+    saves
+}
+
+pub fn list_exports() -> Vec<CheckPoint> {
+    let mut exports = Vec::new();
+    if let Ok(entries) = std::fs::read_dir(exports_dir()) {
+        for entry in entries.flatten() {
+            if let Some(file_name) = entry.file_name().to_str() {
+                if file_name.ends_with(".safetensors") {
+                    let model_id = file_name.trim_end_matches(".safetensors").to_string();
+                    exports.push(CheckPoint::new(model_id));
+                }
+            }
+        }
+    }
+    exports
 }

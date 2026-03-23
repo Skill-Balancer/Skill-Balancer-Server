@@ -51,6 +51,8 @@ async fn main() {
         .merge(routes::model::save_model_route())
         .merge(routes::model::load_model_route())
         .merge(routes::model::export_model_route())
+        .merge(routes::model::list_saves_route())
+        .merge(routes::model::list_exports_route())
         .with_state(state);
 
     println!("Server running on http://localhost:3000");
