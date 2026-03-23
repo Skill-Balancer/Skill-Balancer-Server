@@ -12,11 +12,13 @@ use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use std::{collections::HashMap, sync::Arc};
 use tokio::sync::{Mutex, RwLock};
+use tower_http::services::ServeDir;
 
 //importing routes and files.
 mod config;
 mod routes;
 // importing models
+mod env;
 mod models;
 mod network;
 mod storage;
@@ -42,11 +44,13 @@ async fn main() {
 
     let app = Router::new()
         .merge(routes::root::get_root())
+        .nest_service("/models", ServeDir::new("data/models"))
         .merge(routes::config_route::config_route())
         .merge(routes::step_route::step_route())
         .merge(routes::all_config_route::all_config_route())
-        .merge(routes::save_model::save_model_route())
-        .merge(routes::save_model::load_model_route())
+        .merge(routes::model::save_model_route())
+        .merge(routes::model::load_model_route())
+        .merge(routes::model::export_model_route())
         .with_state(state);
 
     println!("Server running on http://localhost:3000");

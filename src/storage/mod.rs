@@ -1,2 +1,2 @@
-pub mod save_model;
+pub mod model;
 pub mod utils;

@@ -3,9 +3,8 @@ use burn::{
     prelude::Backend,
     record::{FullPrecisionSettings, NamedMpkFileRecorder},
 };
-use std::env;
 
-use crate::{models::ppo::Net, storage::utils::create_dir};
+use crate::{env::models_dir, models::ppo::Net, storage::utils::create_dir};
 
 /// Load Burn model from disk and return the model
 ///  # Arguments
@@ -22,7 +21,7 @@ use crate::{models::ppo::Net, storage::utils::create_dir};
 /// ```
 pub fn load_model<B: Backend>(model: Net<B>, name: &String, device: &B::Device) -> Net<B> {
     let recorder = NamedMpkFileRecorder::<FullPrecisionSettings>::new();
-    let path = format!("{}/{}", get_model_path(), name);
+    let path = format!("{}/{}", models_dir(), name);
     let model = model
         .load_file(path, &recorder, device)
         .expect("Failed to load model");
@@ -44,18 +43,11 @@ pub fn load_model<B: Backend>(model: Net<B>, name: &String, device: &B::Device) 
 /// ```
 pub fn save_model<B: Backend>(model: Net<B>, name: &String) -> String {
     let recorder = NamedMpkFileRecorder::<FullPrecisionSettings>::new();
-    let path = format!("{}/{}", get_model_path(), name);
-    create_dir(&get_model_path());
+    let path = format!("{}/{}", models_dir(), name);
+    create_dir(&models_dir());
 
     model
         .save_file(&path, &recorder)
         .expect("Failed to save model");
     return path;
-}
-
-pub fn get_model_path() -> String {
-    match env::var("DATA_DIR") {
-        Ok(data_dir) => data_dir + "/models",
-        Err(_) => "./data/models".to_string(),
-    }
 }
