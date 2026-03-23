@@ -20,11 +20,11 @@ use crate::{models::ppo::Net, storage::utils::create_dir};
 /// ```rust
 /// write me later
 /// ```
-pub fn load_model<B: Backend>(model: Net<B>, name: String, device: B::Device) -> Net<B> {
+pub fn load_model<B: Backend>(model: Net<B>, name: &String, device: &B::Device) -> Net<B> {
     let recorder = NamedMpkFileRecorder::<FullPrecisionSettings>::new();
     let path = format!("{}/{}", get_model_path(), name);
     let model = model
-        .load_file(path, &recorder, &device)
+        .load_file(path, &recorder, device)
         .expect("Failed to load model");
     return model;
 }
