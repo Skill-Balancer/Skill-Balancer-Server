@@ -5,6 +5,10 @@ pub fn data_dir() -> String {
     }
 }
 
-pub fn models_dir() -> String {
-    format!("{}/models", data_dir())
+pub fn saves_dir() -> String {
+    format!("{}/saves", data_dir())
+}
+
+pub fn exports_dir() -> String {
+    format!("{}/exports", data_dir())
 }

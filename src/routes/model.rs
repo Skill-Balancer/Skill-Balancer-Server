@@ -1,13 +1,7 @@
-use crate::{
-    AppState,
-    env::models_dir,
-    models::ppo::PpoTrainer,
-    storage::model::{load_model, save_model},
-};
+use crate::{AppState, models::ppo::PpoTrainer, storage::model::CheckPoint};
 use axum::{Json, Router, extract::Path, http::StatusCode, response::IntoResponse, routing::get};
 use burn::backend::{Autodiff, NdArray, ndarray::NdArrayDevice};
 use burn_rl::base::ElemType;
-use burn_store::{ModuleSnapshot, SafetensorsStore};
 use serde_json::json;
 pub fn save_model_route() -> Router<AppState> {
     return Router::new().route("/save", get(handle_save_model));
@@ -17,12 +11,14 @@ async fn handle_save_model() -> impl IntoResponse {
     type Back = Autodiff<NdArray<ElemType>>;
     let model = PpoTrainer::<Back>::new().model; // TODO: Use the actual model instead of creating a new one
     let name = "model".to_string();
-    save_model(model, &name);
+    let checkpoint = CheckPoint::new(name.clone());
+
+    let url = checkpoint.save(model);
     (
         StatusCode::NOT_IMPLEMENTED,
         Json(json!({
             "message": format!("Model saved"),
-            "url": format!("/models/{}.mpk", name),
+            "url": url,
         })),
     )
 }
@@ -36,11 +32,26 @@ async fn handle_load_model() -> impl IntoResponse {
     let model = PpoTrainer::<Back>::new().model; // TODO: Use the actual model instead of creating a new one
     let name = "model".to_string();
     let device = NdArrayDevice::default();
-    let model = load_model(model, &name, &device);
-    (
-        StatusCode::NOT_IMPLEMENTED,
-        format!("Model loaded: {}", model), // Sending it back as an example
-    )
+    let checkpoint = CheckPoint::new(name.clone());
+    let res = checkpoint.load(model, &device);
+
+    match res {
+        Ok(loaded_model) => {
+            return (
+                StatusCode::OK,
+                Json(json!({
+                    "message": format!("Model loaded successfully"),
+                    "model": format!("{:?}", loaded_model), // Sending it back as an example
+                })),
+            );
+        }
+        Err(e) => {
+            return (
+                StatusCode::INTERNAL_SERVER_ERROR,
+                Json(json!({"message": format!("Failed to load model: {}", e)})),
+            );
+        }
+    }
 }
 
 pub fn export_model_route() -> Router<AppState> {
@@ -48,17 +59,17 @@ pub fn export_model_route() -> Router<AppState> {
 }
 
 async fn handle_export_model(Path(name): Path<String>) -> impl IntoResponse {
-    let mut store = SafetensorsStore::from_file(format!("{}/{}.safetensors", models_dir(), name))
-        .overwrite(true);
+    let checkpoint = CheckPoint::new(name.clone());
     type Back = Autodiff<NdArray<ElemType>>;
     let model = PpoTrainer::<Back>::new().model; // TODO: Use the actual model instead of creating a new one
-    let res = model.save_into(&mut store);
+    let device = NdArrayDevice::default();
+    let res = checkpoint.export(model, &device);
     match res {
-        Ok(_) => (
+        Ok(url) => (
             StatusCode::OK,
             Json(json!({
                 "message": format!("Model exported"),
-                "url": format!("/models/{}.safetensors", name),
+                "url": url,
             })),
         ),
         Err(e) => (
