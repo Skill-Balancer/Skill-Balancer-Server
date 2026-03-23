@@ -1,11 +1,13 @@
 use crate::{
     AppState,
+    env::models_dir,
     models::ppo::PpoTrainer,
     storage::model::{load_model, save_model},
 };
-use axum::{Json, Router, http::StatusCode, response::IntoResponse, routing::get};
+use axum::{Json, Router, extract::Path, http::StatusCode, response::IntoResponse, routing::get};
 use burn::backend::{Autodiff, NdArray, ndarray::NdArrayDevice};
 use burn_rl::base::ElemType;
+use burn_store::{ModuleSnapshot, SafetensorsStore};
 use serde_json::json;
 pub fn save_model_route() -> Router<AppState> {
     return Router::new().route("/save", get(handle_save_model));
@@ -44,13 +46,26 @@ async fn handle_load_model() -> impl IntoResponse {
 }
 
 pub fn export_model_route() -> Router<AppState> {
-    return Router::new().route("/export", get(handle_export_model));
+    return Router::new().route("/export/{name}", get(handle_export_model));
 }
 
-async fn handle_export_model() -> impl IntoResponse {
-    // TODO: Implement model export to ONNX and send it back in response
-    (
-        StatusCode::NOT_IMPLEMENTED,
-        "Convert model to ONNX and send it back in response".to_string(),
-    )
+async fn handle_export_model(Path(name): Path<String>) -> impl IntoResponse {
+    let mut store = SafetensorsStore::from_file(format!("{}/{}.safetensors", models_dir(), name))
+        .overwrite(true);
+    type Back = Autodiff<NdArray<ElemType>>;
+    let model = PpoTrainer::<Back>::new().model; // TODO: Use the actual model instead of creating a
+    let res = model.save_into(&mut store);
+    match res {
+        Ok(_) => (
+            StatusCode::OK,
+            Json(json!({
+                "message": format!("Model exported"),
+                "url": format!("/models/{}.safetensors", name),
+            })),
+        ),
+        Err(e) => (
+            StatusCode::INTERNAL_SERVER_ERROR,
+            Json(json!({"message": format!("Failed to export model: {}", e)})),
+        ),
+    }
 }
