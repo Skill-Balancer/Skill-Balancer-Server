@@ -1,10 +1,10 @@
 use crate::network::transition::Transition;
 use axum::Router;
 use network::profile::Profile;
+use network::app_state::AppState;
 use std::sync::Arc;
 use tokio::sync::Mutex;
 use tower_http::services::ServeDir;
-use network::app_state::AppState;
 
 //importing routes and files.
 mod config;

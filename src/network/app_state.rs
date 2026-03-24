@@ -6,6 +6,6 @@ use crate::network::transition::Transition;
 
 #[derive(Clone)]
 pub struct AppState {
-    pub profiles: Arc<RwLock<HashMap<String, Profile>>>,
+    pub profiles: Arc<Mutex<Vec<Profile>>>,
     pub transitions: Arc<Mutex<Vec<Transition>>>,
 }

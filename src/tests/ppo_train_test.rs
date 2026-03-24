@@ -2,10 +2,11 @@ use burn::backend::{Autodiff, NdArray};
 use burn::tensor::Tensor;
 
 use crate::models::action::GameAction;
-use crate::models::ppo::PpoTrainer;
+use crate::models::ppo::PPOTrainer;
 use crate::models::state::GameState;
 use burn_rl::base::Model;
 use burn_rl::base::State;
+use burn_rl::agent::PPOTrainingConfig;
 
 type TestBackend = Autodiff<NdArray>;
 
@@ -15,7 +16,7 @@ fn make_state(value: f32) -> GameState {
     }
 }
 
-fn fill_memory_for_training(trainer: &mut PpoTrainer<TestBackend>, count: usize) {
+fn fill_memory_for_training(trainer: &mut PPOTrainer<TestBackend>, count: usize) {
     for i in 0..count {
         let state = make_state(0.1 + i as f32 * 0.001);
         let next_state = make_state(0.2 + i as f32 * 0.001);
@@ -34,7 +35,7 @@ fn fill_memory_for_training(trainer: &mut PpoTrainer<TestBackend>, count: usize)
 
 #[test]
 fn train_resets_memory() {
-    let mut trainer = PpoTrainer::<TestBackend>::new();
+    let mut trainer = PPOTrainer::<TestBackend>::new(PPOTrainingConfig::default());
 
     let batch_size = trainer.config.batch_size;
     fill_memory_for_training(&mut trainer, batch_size);
@@ -52,7 +53,7 @@ fn flatten_tensor_2d(tensor: burn::Tensor<TestBackend, 2>) -> Vec<f32> {
 }
 #[test]
 fn train_changes_model_output() {
-    let mut trainer = PpoTrainer::<TestBackend>::new();
+    let mut trainer = PPOTrainer::<TestBackend>::new(PPOTrainingConfig::default());
 
     let test_state = make_state(0.5);
     let input = test_state.to_tensor::<TestBackend>().unsqueeze();
