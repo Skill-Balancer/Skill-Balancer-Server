@@ -13,6 +13,7 @@ dependencies = [
  "burn-rl",
  "burn-store",
  "dotenv",
+ "rusqlite",
  "serde",
  "serde_json",
  "tokio",

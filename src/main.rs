@@ -1,3 +1,4 @@
+use crate::storage::db;
 use axum::Router;
 use network::profile::Profile;
 use std::sync::Arc;
@@ -22,6 +23,7 @@ struct AppState {
 
 #[tokio::main]
 async fn main() {
+    db::create_database().expect("Failed to create database");
     let state = AppState {
         profiles: Arc::new(Mutex::new(Vec::new())),
     };
