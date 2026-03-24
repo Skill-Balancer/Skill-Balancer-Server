@@ -25,6 +25,9 @@ impl CheckPoint {
     pub fn to_url(&self) -> String {
         format!("/models/save/{}.mpk", self.model_id)
     }
+    pub fn to_export_url(&self) -> String {
+        format!("/models/export/{}.safetensors", self.model_id)
+    }
 
     /// Load Burn model from disk and return the model
     ///  # Arguments

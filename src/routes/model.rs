@@ -67,11 +67,11 @@ async fn handle_export_model(Path(model_id): Path<String>) -> impl IntoResponse 
     let device = NdArrayDevice::default();
     let res = checkpoint.export(model, &device);
     match res {
-        Ok(url) => (
+        Ok(_) => (
             StatusCode::OK,
             Json(json!({
                 "message": format!("Model exported"),
-                "url": url,
+                "url": checkpoint.to_export_url(),
             })),
         ),
         Err(e) => (
@@ -116,14 +116,14 @@ async fn handle_exports_model() -> impl IntoResponse {
         .map(|save| {
             json!({
                 "model_id": save.model_id,
-                "url": save.to_url(),
+                "url": save.to_export_url(),
             })
         })
         .collect();
     (
         StatusCode::OK,
         Json(json!({
-            "message": format!("List of saves"),
+            "message": format!("List of exports"),
             "saves": exports_info,
         })),
     )
