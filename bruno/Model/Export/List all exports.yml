@@ -1,0 +1,15 @@
+info:
+  name: List all exports
+  type: http
+  seq: 1
+
+http:
+  method: GET
+  url: "{{BASE_URL}}/export"
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
