@@ -49,7 +49,7 @@ impl Environment for GameEnv {
     // DONE boolean to false
     // We are keeping action because it's a part of the function signature so it might add some errors
     // if we remove it
-    fn step(&mut self, action: Self::ActionType) -> burn_rl::base::Snapshot<Self> {
+    fn step(&mut self, _action: Self::ActionType) -> burn_rl::base::Snapshot<Self> {
         Snapshot::new(self.state, self.reward, false)
     }
 }

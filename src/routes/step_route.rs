@@ -1,14 +1,18 @@
 use crate::AppState;
-use crate::network::api_error::ApiError;
-use crate::network::transition::Transition;
+use crate::models::environment::GameEnv;
+use crate::models::state::GameState;
 use axum::extract::State;
+use axum::http::StatusCode;
+use axum::response::IntoResponse;
 use axum::{Json, Router, routing::post};
+use burn_rl::base::ElemType;
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Serialize, Deserialize)]
-struct CreateTransitionResponse {
-    pub profile_id: String,
-    pub message: String,
+pub struct Step {
+    pub id: usize,
+    pub game_env: [ElemType; 4],
+    pub reward: ElemType,
 }
 
 pub fn step_route() -> Router<AppState> {
@@ -17,22 +21,24 @@ pub fn step_route() -> Router<AppState> {
 
 async fn create_transition(
     State(state): State<AppState>,
-    Json(payload): Json<Transition>,
-) -> Result<Json<CreateTransitionResponse>, ApiError> {
-    let transition = Transition {
-        profile_id: payload.profile_id.clone(),
-        state: payload.state,
+    Json(payload): Json<Step>,
+) -> impl IntoResponse {
+    let game = GameEnv {
+        state: GameState::from(payload.game_env),
         reward: payload.reward,
     };
 
-    let response = CreateTransitionResponse {
-        profile_id: transition.profile_id.clone(),
-        message: "Transition stored successfully".to_string(),
+    let mut profiles = state.profiles.lock().await;
+
+    let profile = match profiles.get_mut(payload.id) {
+        Some(val) => val,
+        None => return StatusCode::NOT_FOUND,
     };
 
-    let mut transitions = state.transitions.lock().await;
+    profile.trainer.step(&game);
+    drop(profiles);
 
-    transitions.push(transition);
+    // TODO: make this work (have stopped since i am unsure of how to continue)
 
-    Ok(Json(response))
+    StatusCode::OK
 }

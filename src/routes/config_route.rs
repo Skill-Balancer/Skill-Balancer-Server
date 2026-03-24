@@ -1,13 +1,14 @@
 use crate::AppState;
 use crate::models::ppo::PPOTrainer;
-use crate::network::api_error::ApiError;
 use crate::network::profile::Profile;
 use axum::extract::State;
+use axum::response::IntoResponse;
 use axum::{Json, Router, http::StatusCode, routing::post};
 use burn::grad_clipping::GradientClippingConfig;
 use burn_rl::agent::PPOTrainingConfig;
 use burn_rl::base::ElemType;
 use serde::{Deserialize, Serialize};
+use serde_json::json;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ConfigParams {
@@ -36,7 +37,7 @@ pub fn config_route() -> Router<AppState> {
 async fn create_profile(
     State(state): State<AppState>,
     Json(payload): Json<ConfigParams>,
-) -> Result<StatusCode, ApiError> {
+) -> impl IntoResponse {
     let config = set_config(&payload);
     let mut profiles = state.profiles.lock().await;
 
@@ -49,7 +50,13 @@ async fn create_profile(
     };
 
     profiles.push(profile);
-    Ok(StatusCode::OK)
+    (
+        StatusCode::OK,
+        Json(json!({
+            "message": format!("Successfully created profile!"),
+            "id": profiles.len()
+        })),
+    )
 }
 
 fn set_config(payload: &ConfigParams) -> PPOTrainingConfig {

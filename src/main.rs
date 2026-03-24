@@ -1,4 +1,3 @@
-use crate::network::transition::Transition;
 use axum::Router;
 use network::profile::Profile;
 use std::sync::Arc;
@@ -17,16 +16,15 @@ mod storage;
 mod tests;
 
 #[derive(Clone)]
-pub struct AppState {
-    pub profiles: Arc<Mutex<Vec<Profile>>>,
-    pub transitions: Arc<Mutex<Vec<Transition>>>,
+struct AppState {
+    profiles: Arc<Mutex<Vec<Profile>>>,
 }
 
 #[tokio::main]
 async fn main() {
     let state = AppState {
         profiles: Arc::new(Mutex::new(Vec::new())),
-        transitions: Arc::new(Mutex::new(Vec::new())),
+        //transitions: Arc::new(Mutex::new(Vec::new())),
     };
 
     let app = Router::new()
