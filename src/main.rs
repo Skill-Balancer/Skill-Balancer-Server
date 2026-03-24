@@ -1,7 +1,7 @@
 use crate::network::transition::Transition;
 use axum::Router;
-use network::profile::Profile;
 use network::app_state::AppState;
+use network::profile::Profile;
 use std::sync::Arc;
 use tokio::sync::Mutex;
 use tower_http::services::ServeDir;
@@ -13,10 +13,9 @@ mod routes;
 mod env;
 mod models;
 mod network;
+mod storage;
 #[cfg(test)]
 mod tests;
-mod storage;
-
 
 #[tokio::main]
 async fn main() {

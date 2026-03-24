@@ -4,9 +4,9 @@ use burn::tensor::Tensor;
 use crate::models::action::GameAction;
 use crate::models::ppo::PPOTrainer;
 use crate::models::state::GameState;
+use burn_rl::agent::PPOTrainingConfig;
 use burn_rl::base::Model;
 use burn_rl::base::State;
-use burn_rl::agent::PPOTrainingConfig;
 
 type TestBackend = Autodiff<NdArray>;
 
