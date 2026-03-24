@@ -1,17 +1,8 @@
 use crate::network::transition::Transition;
-use axum::{
-    Json, Router,
-    extract::State,
-    http::StatusCode,
-    response::{IntoResponse, Response},
-    routing::{get, post},
-};
-use dotenv::dotenv;
+use axum::Router;
 use network::profile::Profile;
-use serde::{Deserialize, Serialize};
-use serde_json::Value;
-use std::{collections::HashMap, sync::Arc};
-use tokio::sync::{Mutex, RwLock};
+use std::sync::Arc;
+use tokio::sync::Mutex;
 use tower_http::services::ServeDir;
 
 //importing routes and files.
@@ -23,22 +14,16 @@ mod models;
 mod network;
 mod storage;
 
-#[derive(Debug, Serialize, Deserialize)]
-struct RecommendationResponse {
-    recommendation: Value,
-}
 #[derive(Clone)]
 struct AppState {
-    profiles: Arc<RwLock<HashMap<String, Profile>>>,
+    profiles: Arc<Mutex<Vec<Profile>>>,
     transitions: Arc<Mutex<Vec<Transition>>>,
 }
 
 #[tokio::main]
 async fn main() {
-    dotenv().ok();
-
     let state = AppState {
-        profiles: Arc::new(RwLock::new(HashMap::new())),
+        profiles: Arc::new(Mutex::new(Vec::new())),
         transitions: Arc::new(Mutex::new(Vec::new())),
     };
 
