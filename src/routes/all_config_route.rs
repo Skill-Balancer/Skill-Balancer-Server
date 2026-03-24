@@ -1,5 +1,6 @@
-use crate::AppState;
 use crate::network::api_error::ApiError;
+use crate::network::app_state::AppState;
+use crate::network::profile::Profile;
 use axum::extract::State;
 use axum::routing::get;
 use axum::{Json, Router};

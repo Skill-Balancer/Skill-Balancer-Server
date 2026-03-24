@@ -4,6 +4,7 @@ use network::profile::Profile;
 use std::sync::Arc;
 use tokio::sync::Mutex;
 use tower_http::services::ServeDir;
+use network::app_state::AppState;
 
 //importing routes and files.
 mod config;
@@ -12,13 +13,10 @@ mod routes;
 mod env;
 mod models;
 mod network;
+#[cfg(test)]
+mod tests;
 mod storage;
 
-#[derive(Clone)]
-struct AppState {
-    profiles: Arc<Mutex<Vec<Profile>>>,
-    transitions: Arc<Mutex<Vec<Transition>>>,
-}
 
 #[tokio::main]
 async fn main() {
