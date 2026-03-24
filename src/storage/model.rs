@@ -23,7 +23,7 @@ impl CheckPoint {
     }
 
     pub fn to_url(&self) -> String {
-        format!("/saves/{}.mpk", self.model_id)
+        format!("/models/save/{}.mpk", self.model_id)
     }
 
     /// Load Burn model from disk and return the model
@@ -80,7 +80,7 @@ impl CheckPoint {
 
         let res = model.save_into(&mut store);
         match res {
-            Ok(_) => Ok(format!("/exports/{}.safetensors", &self.model_id)),
+            Ok(_) => Ok(format!("/export/{}.safetensors", &self.model_id)),
             Err(e) => Err(format!("Failed to export model: {}", e)),
         }
     }

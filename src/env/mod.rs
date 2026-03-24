@@ -6,9 +6,9 @@ pub fn data_dir() -> String {
 }
 
 pub fn saves_dir() -> String {
-    format!("{}/saves", data_dir())
+    format!("{}/save", data_dir())
 }
 
 pub fn exports_dir() -> String {
-    format!("{}/exports", data_dir())
+    format!("{}/export", data_dir())
 }

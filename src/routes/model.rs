@@ -16,12 +16,12 @@ async fn handle_save_model(Path(model_id): Path<String>) -> impl IntoResponse {
     let model = PpoTrainer::<Back>::new().model; // TODO: Use the actual model instead of creating a new one
     let checkpoint = CheckPoint::new(model_id.clone());
 
-    let url = checkpoint.save(model);
+    checkpoint.save(model);
     (
         StatusCode::NOT_IMPLEMENTED,
         Json(json!({
             "message": format!("Model saved"),
-            "url": url,
+            "url": checkpoint.to_url(),
         })),
     )
 }

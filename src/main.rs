@@ -44,7 +44,7 @@ async fn main() {
 
     let app = Router::new()
         .merge(routes::root::get_root())
-        .nest_service("/models", ServeDir::new("data/models"))
+        .nest_service("/models", ServeDir::new("data"))
         .merge(routes::config_route::config_route())
         .merge(routes::step_route::step_route())
         .merge(routes::all_config_route::all_config_route())
