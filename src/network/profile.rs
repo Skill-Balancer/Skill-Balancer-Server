@@ -1,14 +1,14 @@
-use burn::tensor::backend::AutodiffBackend;
-use serde::{Deserialize, Serialize};
-
 use crate::models::ppo::PPOTrainer;
+use burn::backend::{Autodiff, Wgpu};
+use burn_rl::base::ElemType;
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+type Backend = Autodiff<Wgpu<ElemType>>;
+
 pub struct Profile {
     pub id: usize,
     pub name: String,
     pub version: String,
     pub description: Option<String>,
     // TODO: add more parameters to allow more developer control.
-    // pub trainer: PPOTrainer<B>,
+    pub trainer: PPOTrainer<Backend>,
 }

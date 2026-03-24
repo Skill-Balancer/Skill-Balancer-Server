@@ -1,9 +1,8 @@
 use crate::network::transition::Transition;
 use axum::Router;
-use dotenv::dotenv;
 use network::profile::Profile;
-use std::{collections::HashMap, sync::Arc};
-use tokio::sync::{Mutex, RwLock};
+use std::sync::Arc;
+use tokio::sync::Mutex;
 use tower_http::services::ServeDir;
 
 //importing routes and files.
@@ -17,16 +16,14 @@ mod storage;
 
 #[derive(Clone)]
 struct AppState {
-    profiles: Arc<RwLock<HashMap<usize, Profile>>>,
+    profiles: Arc<Mutex<Vec<Profile>>>,
     transitions: Arc<Mutex<Vec<Transition>>>,
 }
 
 #[tokio::main]
 async fn main() {
-    dotenv().ok();
-
     let state = AppState {
-        profiles: Arc::new(RwLock::new(HashMap::new())),
+        profiles: Arc::new(Mutex::new(Vec::new())),
         transitions: Arc::new(Mutex::new(Vec::new())),
     };
 

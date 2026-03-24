@@ -1,4 +1,5 @@
 use crate::AppState;
+use crate::models::ppo::PPOTrainer;
 use crate::network::api_error::ApiError;
 use crate::network::profile::Profile;
 use axum::extract::State;
@@ -14,7 +15,7 @@ pub struct ConfigParams {
     version: String,
     description: Option<String>,
 
-    // TODO: make more types for model, optimizer and so on
+    // TODO: make more types for model, optimizer, memory and so on
 
     // PPO config (completely optional and will be handled if none)
     gamma: Option<ElemType>,
@@ -36,18 +37,18 @@ async fn create_profile(
     State(state): State<AppState>,
     Json(payload): Json<ConfigParams>,
 ) -> Result<StatusCode, ApiError> {
-    let mut profiles = state.profiles.write().await;
-
     let config = set_config(&payload);
+    let mut profiles = state.profiles.lock().await;
 
     let profile = Profile {
         id: profiles.len(),
         name: payload.name,
         version: payload.version,
         description: payload.description,
-        // trainer: { config: { PPOTrainingConfig { ..config } }},
+        trainer: PPOTrainer::new(config),
     };
-    profiles.insert(profile.id, profile.clone());
+
+    profiles.push(profile);
     Ok(StatusCode::OK)
 }
 
