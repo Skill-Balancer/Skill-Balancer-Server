@@ -1,19 +1,21 @@
 use crate::{
     AppState,
-    models::ppo::PpoTrainer,
+    models::ppo::PPOTrainer,
     storage::model::{CheckPoint, list_exports, list_saves},
 };
 use axum::{Json, Router, extract::Path, http::StatusCode, response::IntoResponse, routing::get};
 use burn::backend::{Autodiff, NdArray, ndarray::NdArrayDevice};
-use burn_rl::base::ElemType;
+use burn_rl::{agent::PPOTrainingConfig, base::ElemType};
 use serde_json::json;
+
 pub fn save_model_route() -> Router<AppState> {
     return Router::new().route("/save/{model_id}", get(handle_save_model));
 }
 
 async fn handle_save_model(Path(model_id): Path<String>) -> impl IntoResponse {
     type Back = Autodiff<NdArray<ElemType>>;
-    let model = PpoTrainer::<Back>::new().model; // TODO: Use the actual model instead of creating a new one
+    let config = PPOTrainingConfig::default();
+    let model = PPOTrainer::<Back>::new(config).model; // TODO: Use the actual model instead of creating a new one
     let checkpoint = CheckPoint::new(model_id.clone());
 
     checkpoint.save(model);
@@ -32,7 +34,8 @@ pub fn load_model_route() -> Router<AppState> {
 
 async fn handle_load_model(Path(model_id): Path<String>) -> impl IntoResponse {
     type Back = Autodiff<NdArray<ElemType>>;
-    let model = PpoTrainer::<Back>::new().model; // TODO: Use the actual model instead of creating a new one
+    let config = PPOTrainingConfig::default();
+    let model = PPOTrainer::<Back>::new(config).model; // TODO: Use the actual model instead of creating a new one
     let device = NdArrayDevice::default();
     let checkpoint = CheckPoint::new(model_id);
     let res = checkpoint.load(model, &device);
@@ -63,7 +66,8 @@ pub fn export_model_route() -> Router<AppState> {
 async fn handle_export_model(Path(model_id): Path<String>) -> impl IntoResponse {
     let checkpoint = CheckPoint::new(model_id.clone());
     type Back = Autodiff<NdArray<ElemType>>;
-    let model = PpoTrainer::<Back>::new().model; // TODO: Use the actual model instead of creating a new one
+    let config = PPOTrainingConfig::default();
+    let model = PPOTrainer::<Back>::new(config).model; // TODO: Use the actual model instead of creating a new one
     let device = NdArrayDevice::default();
     let res = checkpoint.export(model, &device);
     match res {

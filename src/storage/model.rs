@@ -1,16 +1,14 @@
 use burn::{
-    backend::{Autodiff, NdArray},
     module::Module,
     prelude::Backend,
     record::{FullPrecisionSettings, NamedMpkFileRecorder},
 };
-use burn_rl::base::ElemType;
 use burn_store::ModuleSnapshot;
 use burn_store::SafetensorsStore;
 
 use crate::{
     env::{exports_dir, saves_dir},
-    models::ppo::{Net, PpoTrainer},
+    models::ppo::Net,
     storage::utils::create_dir,
 };
 pub struct CheckPoint {
