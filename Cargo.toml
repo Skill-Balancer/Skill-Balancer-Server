@@ -1,5 +1,5 @@
 [workspace]
-members = [".", "burn-rl", "migration"]
+members = [".", "burn-rl"]
 
 [workspace.dependencies]
 burn = { version = "0.20.1", features = ["ndarray", "autodiff"] }
@@ -12,7 +12,6 @@ edition = "2024"
 
 
 [dependencies]
-migration = { path = "migration" }
 burn-rl = { path = "burn-rl" }
 axum = "0.8.8"
 bacon = "3.22.0"
