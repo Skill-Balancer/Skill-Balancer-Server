@@ -49,7 +49,7 @@ async fn handle_load_model(
     let checkpoint = CheckPoint::new(model_id);
     let res = checkpoint.load(model, &device);
 
-    let profiles = state.profiles.lock().await;
+    let _profiles = state.profiles.lock().await;
 
     match res {
         Ok(loaded_model) => {
