@@ -10,7 +10,7 @@ use tower_http::services::ServeDir;
 mod config;
 mod routes;
 // importing models
-mod database;
+mod entities;
 mod env;
 mod models;
 mod network;
@@ -28,6 +28,7 @@ async fn main() {
     dotenv().ok();
     let db = db::create_database().expect("Failed to create database");
     db::sync_database(&db).expect("Failed to synchronize database schema");
+
     let state = AppState {
         profiles: Arc::new(Mutex::new(Vec::new())),
     };
