@@ -1,9 +1,7 @@
-use burn::backend::{Autodiff, NdArray};
-use burn::tensor::Tensor;
-
 use crate::models::action::GameAction;
 use crate::models::ppo::PPOTrainer;
 use crate::models::state::GameState;
+use burn::backend::{Autodiff, NdArray};
 use burn_rl::agent::PPOTrainingConfig;
 use burn_rl::base::Model;
 use burn_rl::base::State;

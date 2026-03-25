@@ -1,6 +1,5 @@
 use crate::network::transition::Transition;
 use axum::Router;
-use network::app_state::AppState;
 use network::profile::Profile;
 use std::sync::Arc;
 use tokio::sync::Mutex;
@@ -16,6 +15,12 @@ mod network;
 mod storage;
 #[cfg(test)]
 mod tests;
+
+#[derive(Clone)]
+pub struct AppState {
+    pub profiles: Arc<Mutex<Vec<Profile>>>,
+    pub transitions: Arc<Mutex<Vec<Transition>>>,
+}
 
 #[tokio::main]
 async fn main() {

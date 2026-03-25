@@ -1,4 +1,4 @@
-use crate::network::app_state::AppState;
+use crate::AppState;
 use askama::Template;
 use axum::{Router, response::Html, routing::get};
 
