@@ -5,22 +5,13 @@ use crate::models::{action::GameAction, state::GameState};
 #[derive(Debug)]
 pub struct GameValues {
     pub data: [ElemType; 4],
-    pub reward: ElemType,
+    pub reward: ElemType, //why is there a reward here?
 }
 
 #[derive(Debug)]
 pub struct GameEnv {
     pub state: GameState,
     pub reward: ElemType,
-}
-
-impl GameEnv {
-    // Set the data from HTTP from the client.
-    // This isn't used yet in main
-    pub fn set_data_from_client(&mut self, input: GameValues) {
-        self.state = GameState::from(input.data);
-        self.reward = input.reward;
-    }
 }
 
 impl Environment for GameEnv {

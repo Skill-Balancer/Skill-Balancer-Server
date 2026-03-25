@@ -9,9 +9,9 @@ use burn_rl::base::ElemType;
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Serialize, Deserialize)]
-pub struct Step {
+pub struct StepParam {
     pub id: usize,
-    pub game_env: [ElemType; 4],
+    pub game_state: [ElemType; 4],
     pub reward: ElemType,
 }
 
@@ -21,10 +21,10 @@ pub fn step_route() -> Router<AppState> {
 
 async fn create_transition(
     State(state): State<AppState>,
-    Json(payload): Json<Step>,
+    Json(payload): Json<StepParam>,
 ) -> impl IntoResponse {
     let game = GameEnv {
-        state: GameState::from(payload.game_env),
+        state: GameState::from(payload.game_state),
         reward: payload.reward,
     };
 
@@ -37,8 +37,6 @@ async fn create_transition(
 
     profile.trainer.step(&game);
     drop(profiles);
-
-    // TODO: make this work (have stopped since i am unsure of how to continue)
 
     StatusCode::OK
 }

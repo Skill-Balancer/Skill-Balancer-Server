@@ -12,3 +12,5 @@ pub struct Profile {
     pub trainer: PPOTrainer<Backend>,
     // TODO: add more parameters to allow more developer control.
 }
+
+// TODO: make function that can switch between different trainers

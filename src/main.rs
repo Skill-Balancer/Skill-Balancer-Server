@@ -24,7 +24,6 @@ struct AppState {
 async fn main() {
     let state = AppState {
         profiles: Arc::new(Mutex::new(Vec::new())),
-        //transitions: Arc::new(Mutex::new(Vec::new())),
     };
 
     let app = Router::new()
