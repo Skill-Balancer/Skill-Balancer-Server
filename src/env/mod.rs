@@ -16,6 +16,6 @@ pub fn exports_dir() -> String {
 pub fn db_url() -> String {
     match std::env::var("DATABASE_URL") {
         Ok(url) => url,
-        Err(_) => format!("sqlite://{}/local.db",data_dir()),
+        Err(_) => format!("sqlite://{}/local.db", data_dir()),
     }
 }

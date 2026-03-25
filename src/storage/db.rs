@@ -1,11 +1,11 @@
 use std::time::Duration;
 
-use sea_orm::{ConnectOptions, Database, DatabaseConnection};
+use sea_orm::{ConnectOptions, Database, DatabaseConnection, DbErr};
 
-use crate::env::db_url;
+use crate::env;
 
 pub fn create_database() -> Result<DatabaseConnection, sea_orm::DbErr> {
-    let mut opt = ConnectOptions::new(db_url());
+    let mut opt = ConnectOptions::new(env::db_url());
     opt.max_connections(100)
         .min_connections(5)
         .connect_timeout(Duration::from_secs(8))
@@ -16,6 +16,11 @@ pub fn create_database() -> Result<DatabaseConnection, sea_orm::DbErr> {
     Database::connect(opt)
 }
 
-pub fn close_database(db: DatabaseConnection) {
-    db.close();
+pub fn close_database(db: DatabaseConnection) -> Result<(), DbErr> {
+    db.close()
+}
+
+pub fn sync_database(db: &DatabaseConnection) -> Result<(), DbErr> {
+    db.get_schema_registry("Data-Collection-Rust-server::database::*")
+        .sync(db)
 }
