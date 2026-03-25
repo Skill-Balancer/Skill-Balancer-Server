@@ -1,0 +1,24 @@
+info:
+  name: config setup
+  type: http
+  seq: 1
+
+http:
+  method: POST
+  url: "{{BASE_URL}}/config"
+  body:
+    type: json
+    data: |-
+      {
+        "name": "name1",
+        "version": "1.0",
+        "description": "THIS IS A TEST",
+        "gamma": 0.9
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
