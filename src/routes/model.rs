@@ -3,7 +3,13 @@ use crate::{
     models::ppo::PPOTrainer,
     storage::model::{CheckPoint, list_exports, list_saves},
 };
-use axum::{Json, Router, extract::Path, http::StatusCode, response::IntoResponse, routing::get};
+use axum::{
+    Json, Router,
+    extract::{Path, State},
+    http::StatusCode,
+    response::IntoResponse,
+    routing::get,
+};
 use burn::backend::{Autodiff, NdArray, ndarray::NdArrayDevice};
 use burn_rl::{agent::PPOTrainingConfig, base::ElemType};
 use serde_json::json;
@@ -32,13 +38,18 @@ pub fn load_model_route() -> Router<AppState> {
     return Router::new().route("/load/{model_id}", get(handle_load_model));
 }
 
-async fn handle_load_model(Path(model_id): Path<String>) -> impl IntoResponse {
+async fn handle_load_model(
+    Path(model_id): Path<String>,
+    State(state): State<AppState>,
+) -> impl IntoResponse {
     type Back = Autodiff<NdArray<ElemType>>;
     let config = PPOTrainingConfig::default();
     let model = PPOTrainer::<Back>::new(config).model; // TODO: Use the actual model instead of creating a new one
     let device = NdArrayDevice::default();
     let checkpoint = CheckPoint::new(model_id);
     let res = checkpoint.load(model, &device);
+
+    let _profiles = state.profiles.lock().await;
 
     match res {
         Ok(loaded_model) => {

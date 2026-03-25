@@ -3,24 +3,16 @@ use burn_rl::base::{ElemType, Snapshot, environment::Environment};
 use crate::models::{action::GameAction, state::GameState};
 
 #[derive(Debug)]
-pub struct GameValues {
+pub struct _GameValues {
+    // TODO: make used at some point (it is not necessary now, but it will be)
     pub data: [ElemType; 4],
-    pub reward: ElemType,
+    pub reward: ElemType, //why is there a reward here?
 }
 
 #[derive(Debug)]
 pub struct GameEnv {
     pub state: GameState,
     pub reward: ElemType,
-}
-
-impl GameEnv {
-    // Set the data from HTTP from the client.
-    // This isn't used yet in main
-    pub fn set_data_from_client(&mut self, input: GameValues) {
-        self.state = GameState::from(input.data);
-        self.reward = input.reward;
-    }
 }
 
 impl Environment for GameEnv {
@@ -49,7 +41,7 @@ impl Environment for GameEnv {
     // DONE boolean to false
     // We are keeping action because it's a part of the function signature so it might add some errors
     // if we remove it
-    fn step(&mut self, action: Self::ActionType) -> burn_rl::base::Snapshot<Self> {
+    fn step(&mut self, _action: Self::ActionType) -> burn_rl::base::Snapshot<Self> {
         Snapshot::new(self.state, self.reward, false)
     }
 }
