@@ -56,9 +56,9 @@ impl<B: Backend> Model<B, Tensor<B, 2>, PPOOutput<B>, Tensor<B, 2>> for Net<B> {
         softmax(self.linear_actor.forward(layer_0_output.clone()), 1)
     }
 }
-const INPUT_SIZE: usize = 50; // TODO: Make configuable
+const INPUT_SIZE: usize = 4; // TODO: Make configuable
 const DENSE_SIZE: usize = 128;
-const OUTPUT_SIZE: usize = 1; // TODO: Make configuable
+const OUTPUT_SIZE: usize = 5; // TODO: Make configuable
 
 const MEMORY_SIZE: usize = 512;
 
@@ -105,15 +105,24 @@ impl<B: AutodiffBackend> PPOTrainer<B> {
             self.steps += 1;
 
             if self.steps % TRAIN_EVERY == 0 {
-                // self.train
-                todo!();
+                self.train();
             }
         }
         self.last_state = Some(env.state.clone());
         self.action = PPO::<GameEnv, B, Net<B>>::react_with_model(&env.state, &self.model);
     }
 
-    fn train(&self) {
-        todo!(); // Use PPO<>::train function (See example)
+    pub fn train(&mut self) {
+        if self.memory.len() == 0 || self.memory.len() < self.config.batch_size {
+            return;
+        }
+
+        self.model = PPO::<GameEnv, B, Net<B>>::train(
+            self.model.clone(),
+            &self.memory,
+            &mut self.optimizer,
+            &self.config,
+        );
+        self.memory.clear();
     }
 }

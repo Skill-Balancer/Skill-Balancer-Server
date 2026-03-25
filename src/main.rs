@@ -13,11 +13,13 @@ mod env;
 mod models;
 mod network;
 mod storage;
+#[cfg(test)]
+mod tests;
 
 #[derive(Clone)]
-struct AppState {
-    profiles: Arc<Mutex<Vec<Profile>>>,
-    transitions: Arc<Mutex<Vec<Transition>>>,
+pub struct AppState {
+    pub profiles: Arc<Mutex<Vec<Profile>>>,
+    pub transitions: Arc<Mutex<Vec<Transition>>>,
 }
 
 #[tokio::main]
