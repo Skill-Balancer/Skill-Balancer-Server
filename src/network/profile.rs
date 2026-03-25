@@ -7,8 +7,8 @@ type Backend = Autodiff<NdArray<ElemType>>;
 pub struct Profile {
     pub id: usize,
     pub name: String,
-    pub version: String,
     pub description: Option<String>,
-    // TODO: add more parameters to allow more developer control.
+    pub trainer_index: Vec<String>,
     pub trainer: PPOTrainer<Backend>,
+    // TODO: add more parameters to allow more developer control.
 }

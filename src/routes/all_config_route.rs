@@ -9,7 +9,7 @@ use serde::{Deserialize, Serialize};
 struct ProfilesJSON {
     id: usize,
     name: String,
-    version: String,
+    train_index: Vec<String>,
     description: Option<String>,
 }
 
@@ -25,7 +25,7 @@ async fn list_profiles(State(state): State<AppState>) -> Result<Json<Vec<Profile
         values.push(ProfilesJSON {
             id: profile.id,
             name: profile.name.clone(),
-            version: profile.version.clone(),
+            train_index: profile.trainer_index.clone(),
             description: profile.description.clone(),
         });
     }
