@@ -5,7 +5,7 @@ info:
 
 http:
   method: GET
-  url: "{{BASE_URL}}/export/{{model_id}}"
+  url: "{{BASE_URL}}/export/{{name}}"
   auth: inherit
 
 runtime:
