@@ -1,6 +1,5 @@
 use crate::{
     AppState,
-    models::ppo::PPOTrainer,
     storage::model::{CheckPoint, list_exports, list_saves},
 };
 use axum::{
@@ -10,36 +9,33 @@ use axum::{
     response::IntoResponse,
     routing::get,
 };
-use burn::backend::{Autodiff, NdArray, ndarray::NdArrayDevice};
-use burn_rl::{agent::PPOTrainingConfig, base::ElemType};
+use burn::module::Module;
 use serde_json::json;
 
 pub fn save_model_route() -> Router<AppState> {
-    return Router::new().route("/save/{profile_id}/{model_id}", get(handle_save_model));
+    return Router::new().route("/save/{name}", get(handle_save_model));
 }
 
 async fn handle_save_model(
-    Path(profile_id): Path<usize>,
-    Path(model_id): Path<String>,
+    Path(name): Path<String>,
     State(state): State<AppState>,
 ) -> impl IntoResponse {
-    let mut profiles = state.profiles.lock().await;
+    let profiles = state.profiles.lock().await;
 
-    let profile = match profiles.get_mut(profile_id) {
+    let profile = match profiles.iter().find(|p| p.name == name) {
         Some(val) => val,
         None => {
             return (
                 StatusCode::NOT_FOUND,
                 Json(json!({
-                    "message": format!("Could not find profile with id {}", profile_id),
+                    "message": format!("Could not find profile with id {}", name),
                 })),
             );
         }
     };
 
-    let checkpoint = CheckPoint::new(model_id.clone());
+    let checkpoint = CheckPoint::new(profile.name.clone());
     checkpoint.save(profile.trainer.model.clone());
-
     drop(profiles);
 
     (
@@ -52,21 +48,46 @@ async fn handle_save_model(
 }
 
 pub fn load_model_route() -> Router<AppState> {
-    return Router::new().route("/load/{model_id}", get(handle_load_model));
+    return Router::new().route("/load/{name}", get(handle_load_model));
 }
 
 async fn handle_load_model(
-    Path(model_id): Path<String>,
+    Path(name): Path<String>,
     State(state): State<AppState>,
 ) -> impl IntoResponse {
-    type Back = Autodiff<NdArray<ElemType>>;
-    let config = PPOTrainingConfig::default();
-    let model = PPOTrainer::<Back>::new(config).model; // TODO: Use the actual model instead of creating a new one
-    let device = NdArrayDevice::default();
-    let checkpoint = CheckPoint::new(model_id);
-    let res = checkpoint.load(model, &device);
+    let profiles = state.profiles.lock().await;
 
-    let _profiles = state.profiles.lock().await;
+    let profile = match profiles.iter().find(|p| p.name == name) {
+        Some(val) => val,
+        None => {
+            return (
+                StatusCode::NOT_FOUND,
+                Json(json!({
+                    "message": format!("Could not find profile with id {}", name),
+                })),
+            );
+        }
+    };
+
+    // for whatever reason returns a vector
+    let devices = profile.trainer.model.devices();
+
+    let device = match devices.first() {
+        Some(val) => val,
+        None => {
+            return (
+                StatusCode::NOT_FOUND,
+                Json(json!({
+                    "error": format!("Could not find backend for this config, this error should never print!"),
+                })),
+            );
+        }
+    };
+
+    let checkpoint = CheckPoint::new(name);
+    let res = checkpoint.load(profile.trainer.model.clone(), &device);
+
+    drop(profiles);
 
     match res {
         Ok(loaded_model) => {
@@ -88,16 +109,43 @@ async fn handle_load_model(
 }
 
 pub fn export_model_route() -> Router<AppState> {
-    return Router::new().route("/export/{model_id}", get(handle_export_model));
+    return Router::new().route("/export/{name}", get(handle_export_model));
 }
 
-async fn handle_export_model(Path(model_id): Path<String>) -> impl IntoResponse {
-    let checkpoint = CheckPoint::new(model_id.clone());
-    type Back = Autodiff<NdArray<ElemType>>;
-    let config = PPOTrainingConfig::default();
-    let model = PPOTrainer::<Back>::new(config).model; // TODO: Use the actual model instead of creating a new one
-    let device = NdArrayDevice::default();
-    let res = checkpoint.export(model, &device);
+async fn handle_export_model(
+    Path(name): Path<String>,
+    State(state): State<AppState>,
+) -> impl IntoResponse {
+    let profiles = state.profiles.lock().await;
+
+    let profile = match profiles.iter().find(|p| p.name == name) {
+        Some(val) => val,
+        None => {
+            return (
+                StatusCode::NOT_FOUND,
+                Json(json!({
+                    "message": format!("Could not find profile with id {}", name),
+                })),
+            );
+        }
+    };
+
+    let devices = profile.trainer.model.devices();
+
+    let device = match devices.first() {
+        Some(val) => val,
+        None => {
+            return (
+                StatusCode::NOT_FOUND,
+                Json(json!({
+                    "error": format!("Could not find backend for this config, this error should never print!"),
+                })),
+            );
+        }
+    };
+    let checkpoint = CheckPoint::new(profile.name.clone());
+    let res = checkpoint.export(profile.trainer.model.clone(), &device);
+
     match res {
         Ok(_) => (
             StatusCode::OK,

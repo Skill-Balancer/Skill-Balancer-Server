@@ -4,8 +4,20 @@ info:
   seq: 3
 
 http:
-  method: GET
+  method: POST
   url: "{{BASE_URL}}/step"
+  params:
+    - name: ""
+      value: ""
+      type: query
+  body:
+    type: json
+    data: |-
+      {
+        "name": "ikemen",
+        "game_state": [0.0, 0.0, 0.0, 0.0],
+        "prev_reward": 0.0
+      }
   auth: inherit
 
 settings:

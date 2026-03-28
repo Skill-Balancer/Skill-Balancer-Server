@@ -10,10 +10,9 @@ http:
     type: json
     data: |-
       {
-        "name": "name1",
-        "version": "1.0",
+        "name": "ikemen",
         "description": "THIS IS A TEST",
-        "gamma": 0.9
+        "gamma": 0.99
       }
   auth: inherit
 
