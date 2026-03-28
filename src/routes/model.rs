@@ -15,18 +15,35 @@ use burn_rl::{agent::PPOTrainingConfig, base::ElemType};
 use serde_json::json;
 
 pub fn save_model_route() -> Router<AppState> {
-    return Router::new().route("/save/{model_id}", get(handle_save_model));
+    return Router::new().route("/save/{profile_id}/{model_id}", get(handle_save_model));
 }
 
-async fn handle_save_model(Path(model_id): Path<String>) -> impl IntoResponse {
-    type Back = Autodiff<NdArray<ElemType>>;
-    let config = PPOTrainingConfig::default();
-    let model = PPOTrainer::<Back>::new(config).model; // TODO: Use the actual model instead of creating a new one
-    let checkpoint = CheckPoint::new(model_id.clone());
+async fn handle_save_model(
+    Path(profile_id): Path<usize>,
+    Path(model_id): Path<String>,
+    State(state): State<AppState>,
+) -> impl IntoResponse {
+    let mut profiles = state.profiles.lock().await;
 
-    checkpoint.save(model);
+    let profile = match profiles.get_mut(profile_id) {
+        Some(val) => val,
+        None => {
+            return (
+                StatusCode::NOT_FOUND,
+                Json(json!({
+                    "message": format!("Could not find profile with id {}", profile_id),
+                })),
+            );
+        }
+    };
+
+    let checkpoint = CheckPoint::new(model_id.clone());
+    checkpoint.save(profile.trainer.model.clone());
+
+    drop(profiles);
+
     (
-        StatusCode::NOT_IMPLEMENTED,
+        StatusCode::OK,
         Json(json!({
             "message": format!("Model saved"),
             "url": checkpoint.to_url(),

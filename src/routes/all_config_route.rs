@@ -7,9 +7,7 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Serialize, Deserialize)]
 struct ProfilesJSON {
-    id: usize,
     name: String,
-    train_index: Vec<String>,
     description: Option<String>,
 }
 
@@ -23,9 +21,7 @@ async fn list_profiles(State(state): State<AppState>) -> Result<Json<Vec<Profile
     let mut values = vec![];
     for profile in profiles_iter {
         values.push(ProfilesJSON {
-            id: profile.id,
             name: profile.name.clone(),
-            train_index: profile.trainer_index.clone(),
             description: profile.description.clone(),
         });
     }
