@@ -5,7 +5,7 @@ info:
 
 http:
   method: GET
-  url: "{{BASE_URL}}/save/{{model_id}}"
+  url: "{{BASE_URL}}/save/{{name}}"
   auth: inherit
 
 runtime:

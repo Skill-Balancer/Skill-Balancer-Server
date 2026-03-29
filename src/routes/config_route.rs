@@ -13,7 +13,6 @@ use serde_json::json;
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ConfigParams {
     name: String,
-    train_index: String,
     description: Option<String>,
 
     // TODO: make more types for model, optimizer, memory and so on
@@ -42,9 +41,7 @@ async fn create_profile(
     let mut profiles = state.profiles.lock().await;
 
     let profile = Profile {
-        id: profiles.len(),
         name: payload.name,
-        trainer_index: vec![payload.train_index],
         description: payload.description,
         trainer: PPOTrainer::new(config),
     };
@@ -53,9 +50,7 @@ async fn create_profile(
     (
         StatusCode::OK,
         Json(json!({
-            "message": format!("Successfully created profile!"),
-            "id": profiles.len()
-        })),
+            "message": format!("Successfully created profile!")})),
     )
 }
 

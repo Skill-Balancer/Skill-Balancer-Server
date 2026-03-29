@@ -1,18 +1,22 @@
 info:
-  name: config setup
+  name: Step
   type: http
-  seq: 1
+  seq: 3
 
 http:
   method: POST
-  url: "{{BASE_URL}}/config"
+  url: "{{BASE_URL}}/step"
+  params:
+    - name: ""
+      value: ""
+      type: query
   body:
     type: json
     data: |-
       {
         "name": "ikemen",
-        "description": "THIS IS A TEST",
-        "gamma": 0.99
+        "game_state": [0.0, 0.0, 0.0, 0.0],
+        "prev_reward": 0.0
       }
   auth: inherit
 

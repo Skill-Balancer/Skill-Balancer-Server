@@ -7,12 +7,13 @@ use axum::response::IntoResponse;
 use axum::{Json, Router, routing::post};
 use burn_rl::base::ElemType;
 use serde::{Deserialize, Serialize};
+use serde_json::json;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct StepParam {
-    pub id: usize,
+    pub name: String,
     pub game_state: [ElemType; 4],
-    pub reward: ElemType,
+    pub prev_reward: ElemType,
 }
 
 pub fn step_route() -> Router<AppState> {
@@ -25,18 +26,27 @@ async fn create_transition(
 ) -> impl IntoResponse {
     let game = GameEnv {
         state: GameState::from(payload.game_state),
-        reward: payload.reward,
+        reward: payload.prev_reward,
     };
 
     let mut profiles = state.profiles.lock().await;
 
-    let profile = match profiles.get_mut(payload.id) {
+    let profile = match profiles.iter_mut().find(|p| p.name == payload.name) {
         Some(val) => val,
-        None => return StatusCode::NOT_FOUND,
+        None => {
+            return (
+                StatusCode::NO_CONTENT,
+                Json(json!({"error": format!("That config does not exist!")})),
+            );
+        }
     };
 
     profile.trainer.step(&game);
     drop(profiles);
 
-    StatusCode::OK
+    (
+        StatusCode::OK,
+        Json(json!({
+        "message": format!("Successfully stepped!")})),
+    )
 }

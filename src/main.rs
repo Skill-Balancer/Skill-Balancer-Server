@@ -32,11 +32,11 @@ async fn main() {
         .merge(routes::config_route::config_route())
         .merge(routes::step_route::step_route())
         .merge(routes::all_config_route::all_config_route())
-        .merge(routes::model::save_model_route())
-        .merge(routes::model::load_model_route())
-        .merge(routes::model::export_model_route())
-        .merge(routes::model::list_saves_route())
-        .merge(routes::model::list_exports_route())
+        .merge(routes::model::save::save_model_route())
+        .merge(routes::model::load::load_model_route())
+        .merge(routes::model::export::export_model_route())
+        .merge(routes::model::list_saves::list_saves_route())
+        .merge(routes::model::list_exports::list_exports_route())
         .with_state(state);
 
     println!("Server running on http://localhost:3000");
