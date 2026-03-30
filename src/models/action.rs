@@ -22,6 +22,18 @@ impl From<u32> for GameAction {
     }
 }
 
+impl Into<isize> for GameAction {
+    fn into(self) -> isize {
+        match self {
+            GameAction::NoChange => 0,
+            GameAction::PlayerOneAttInc => 1,
+            GameAction::PlayerOneAttDec => -1,
+            GameAction::PlayerTwoAttInc => 2,
+            GameAction::PlayerTwoAttDec => -2,
+        }
+    }
+}
+
 impl From<GameAction> for u32 {
     fn from(action: GameAction) -> Self {
         match action {
