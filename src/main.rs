@@ -21,6 +21,7 @@ mod tests;
 #[derive(Clone)]
 struct AppState {
     profiles: Arc<Mutex<Vec<Profile>>>,
+    db: DB,
 }
 
 #[tokio::main]
@@ -33,6 +34,7 @@ async fn main() {
 
     let state = AppState {
         profiles: Arc::new(Mutex::new(Vec::new())),
+        db: db.clone(),
     };
 
     let app = Router::new()

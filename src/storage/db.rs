@@ -4,13 +4,14 @@ use sea_orm::{ActiveModelTrait, ConnectOptions, Database, DatabaseConnection, Db
 
 use crate::{entities::config, env};
 
+#[derive(Clone)]
 pub struct DB {
     connection: DatabaseConnection,
 }
 
 impl DB {
     pub async fn new() -> Result<Self, DbErr> {
-        let mut opt = ConnectOptions::new(env::db_url());
+        let mut opt = ConnectOptions::new(format!("{}?mode=rwc", env::db_url()));
         opt.max_connections(100)
             .min_connections(5)
             .connect_timeout(Duration::from_secs(8))
@@ -29,7 +30,7 @@ impl DB {
 
     pub async fn sync_schema(&self) -> Result<(), DbErr> {
         self.connection
-            .get_schema_registry("Data-Collection-Rust-server::database::*")
+            .get_schema_registry("Data-Collection-Rust-server::entities::*")
             .sync(&self.connection)
             .await
     }
@@ -38,13 +39,12 @@ impl DB {
         self.connection.close().await
     }
 
-    #[allow(unused)]
     pub async fn insert_config(&self, config: config::ActiveModel) -> Result<config::Model, DbErr> {
         config.insert(&self.connection).await
     }
 
     #[allow(unused)]
-    pub async fn get_config(&self, id: i32) -> Result<Option<config::Model>, DbErr> {
+    pub async fn get_config(&self, id: &String) -> Result<Option<config::Model>, DbErr> {
         config::Entity::find_by_id(id).one(&self.connection).await
     }
 }

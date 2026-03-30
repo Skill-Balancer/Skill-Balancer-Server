@@ -7,6 +7,7 @@ use axum::{Json, Router, http::StatusCode, routing::post};
 use burn::grad_clipping::GradientClippingConfig;
 use burn_rl::agent::PPOTrainingConfig;
 use burn_rl::base::ElemType;
+use sea_orm::ActiveValue::Set;
 use serde::{Deserialize, Serialize};
 use serde_json::json;
 
@@ -24,8 +25,8 @@ pub struct ConfigParams {
     critic_weight: Option<ElemType>,
     entropy_weight: Option<ElemType>,
     learning_rate: Option<ElemType>,
-    epochs: Option<usize>,
-    batch_size: Option<usize>,
+    epochs: Option<u64>,
+    batch_size: Option<u64>,
     clip_grad: Option<f32>,
 }
 
@@ -39,6 +40,24 @@ async fn create_profile(
 ) -> impl IntoResponse {
     let config = set_config(&payload);
     let mut profiles = state.profiles.lock().await;
+
+    state
+        .db
+        .insert_config(crate::entities::config::ActiveModel {
+            name: Set(payload.name.clone()),
+            description: Set(Some(payload.description.clone().unwrap_or("".to_string()))),
+            gamma: Set(config.gamma),
+            lambda: Set(config.lambda),
+            epsilon_clip: Set(config.epsilon_clip),
+            critic_weight: Set(config.critic_weight),
+            entropy_weight: Set(config.entropy_weight),
+            learning_rate: Set(config.learning_rate),
+            epochs: Set(config.epochs as u32),
+            batch_size: Set(config.batch_size as u32),
+            clip_grad: Set(payload.clip_grad.unwrap_or(100.0)),
+        })
+        .await
+        .expect("Failed to insert config into database");
 
     let profile = Profile {
         name: payload.name,
@@ -68,8 +87,8 @@ fn set_config(payload: &ConfigParams) -> PPOTrainingConfig {
     config.learning_rate = payload
         .learning_rate
         .unwrap_or_else(|| config.learning_rate);
-    config.epochs = payload.epochs.unwrap_or_else(|| config.epochs);
-    config.batch_size = payload.batch_size.unwrap_or_else(|| config.batch_size);
+    config.epochs = payload.epochs.unwrap_or_else(|| config.epochs as u64) as usize;
+    config.batch_size = payload.batch_size.unwrap_or_else(|| config.batch_size as u64) as usize;
 
     config.clip_grad = match payload.clip_grad {
         None => Some(GradientClippingConfig::Value(100.0)),

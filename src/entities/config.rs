@@ -6,7 +6,6 @@ use serde::{Deserialize, Serialize};
 #[sea_orm(table_name = "config")]
 pub struct Model {
     #[sea_orm(primary_key)]
-    id: i32,
     name: String,
     description: Option<String>,
     gamma: ElemType,
@@ -17,7 +16,7 @@ pub struct Model {
     learning_rate: ElemType,
     epochs: u32,
     batch_size: u32,
-    clip_grad: u32,
+    clip_grad: f32,
 }
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
 pub enum Relation {}
