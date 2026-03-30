@@ -1,26 +1,50 @@
 use std::time::Duration;
 
-use sea_orm::{ConnectOptions, Database, DatabaseConnection, DbErr};
+use sea_orm::{ActiveModelTrait, ConnectOptions, Database, DatabaseConnection, DbErr, EntityTrait};
 
-use crate::env;
+use crate::{entities::config, env};
 
-pub fn create_database() -> Result<DatabaseConnection, sea_orm::DbErr> {
-    let mut opt = ConnectOptions::new(env::db_url());
-    opt.max_connections(100)
-        .min_connections(5)
-        .connect_timeout(Duration::from_secs(8))
-        .acquire_timeout(Duration::from_secs(8))
-        .idle_timeout(Duration::from_secs(8))
-        .max_lifetime(Duration::from_secs(8));
-
-    Database::connect(opt)
+pub struct DB {
+    connection: DatabaseConnection,
 }
 
-pub fn close_database(db: DatabaseConnection) -> Result<(), DbErr> {
-    db.close()
-}
+impl DB {
+    pub async fn new() -> Result<Self, DbErr> {
+        let mut opt = ConnectOptions::new(env::db_url());
+        opt.max_connections(100)
+            .min_connections(5)
+            .connect_timeout(Duration::from_secs(8))
+            .acquire_timeout(Duration::from_secs(8))
+            .idle_timeout(Duration::from_secs(8))
+            .max_lifetime(Duration::from_secs(8));
 
-pub fn sync_database(db: &DatabaseConnection) -> Result<(), DbErr> {
-    db.get_schema_registry("Data-Collection-Rust-server::database::*")
-        .sync(db)
+        Ok(Self {
+            connection: Database::connect(opt).await?,
+        })
+    }
+    #[allow(unused)]
+    pub fn get_connection(&self) -> &DatabaseConnection {
+        &self.connection
+    }
+
+    pub async fn sync_schema(&self) -> Result<(), DbErr> {
+        self.connection
+            .get_schema_registry("Data-Collection-Rust-server::database::*")
+            .sync(&self.connection)
+            .await
+    }
+
+    pub async fn close(self) -> Result<(), DbErr> {
+        self.connection.close().await
+    }
+
+    #[allow(unused)]
+    pub async fn insert_config(&self, config: config::ActiveModel) -> Result<config::Model, DbErr> {
+        config.insert(&self.connection).await
+    }
+
+    #[allow(unused)]
+    pub async fn get_config(&self, id: i32) -> Result<Option<config::Model>, DbErr> {
+        config::Entity::find_by_id(id).one(&self.connection).await
+    }
 }
