@@ -88,7 +88,9 @@ fn set_config(payload: &ConfigParams) -> PPOTrainingConfig {
         .learning_rate
         .unwrap_or_else(|| config.learning_rate);
     config.epochs = payload.epochs.unwrap_or_else(|| config.epochs as u64) as usize;
-    config.batch_size = payload.batch_size.unwrap_or_else(|| config.batch_size as u64) as usize;
+    config.batch_size = payload
+        .batch_size
+        .unwrap_or_else(|| config.batch_size as u64) as usize;
 
     config.clip_grad = match payload.clip_grad {
         None => Some(GradientClippingConfig::Value(100.0)),
