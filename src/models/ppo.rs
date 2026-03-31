@@ -89,7 +89,7 @@ impl<B: AutodiffBackend> PPOTrainer<B> {
         }
     }
 
-    pub fn step(&mut self, env: &GameEnv) {
+    pub fn step(&mut self, env: &GameEnv) -> isize {
         if let Some(last_state) = self.last_state
             && let Some(action) = self.action
         {
@@ -110,7 +110,8 @@ impl<B: AutodiffBackend> PPOTrainer<B> {
         }
         self.last_state = Some(env.state.clone());
         self.action = PPO::<GameEnv, B, Net<B>>::react_with_model(&env.state, &self.model);
-    }
+        self.action.is_some().into() // very weird way to check if action is there, i know it always will be but this code should have better action handling.
+    } // but it works for now
 
     pub fn train(&mut self) {
         if self.memory.len() == 0 || self.memory.len() < self.config.batch_size {

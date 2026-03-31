@@ -35,18 +35,22 @@ async fn create_transition(
         Some(val) => val,
         None => {
             return (
-                StatusCode::NO_CONTENT,
-                Json(json!({"error": format!("That config does not exist!")})),
+                StatusCode::NOT_FOUND,
+                Json(json!({
+                    "error": format!("did not find profile with name {}", payload.name)
+                })),
             );
         }
     };
 
-    profile.trainer.step(&game);
+    let action = profile.trainer.step(&game);
     drop(profiles);
 
     (
         StatusCode::OK,
         Json(json!({
-        "message": format!("Successfully stepped!")})),
+            "message": format!("Stepped successfully"),
+            "action": action,
+        })),
     )
 }
