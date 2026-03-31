@@ -1,4 +1,5 @@
 use crate::AppState;
+use crate::entities::config;
 use crate::models::ppo::PPOTrainer;
 use crate::network::profile::Profile;
 use axum::extract::State;
@@ -34,30 +35,70 @@ pub fn config_route() -> Router<AppState> {
     Router::new().route("/config", post(create_profile))
 }
 
+fn cmp_configs(db_conf: &config::Model, request_config: &ConfigParams) -> bool {
+    let config = set_config(&request_config);
+    db_conf.gamma == config.gamma
+        && db_conf.lambda == config.lambda
+        && db_conf.epsilon_clip == config.epsilon_clip
+        && db_conf.critic_weight == config.critic_weight
+        && db_conf.entropy_weight == config.entropy_weight
+        && db_conf.learning_rate == config.learning_rate
+        && db_conf.epochs == config.epochs as u32
+        && db_conf.batch_size == config.batch_size as u32
+        && db_conf.clip_grad == request_config.clip_grad.unwrap_or(100.0)
+}
+
 async fn create_profile(
     State(state): State<AppState>,
     Json(payload): Json<ConfigParams>,
 ) -> impl IntoResponse {
     let config = set_config(&payload);
     let mut profiles = state.profiles.lock().await;
+    let mut response = (
+        StatusCode::OK,
+        Json(json!({"message": "Config created successfully."})),
+    );
 
-    state
-        .db
-        .insert_config(crate::entities::config::ActiveModel {
-            name: Set(payload.name.clone()),
-            description: Set(Some(payload.description.clone().unwrap_or("".to_string()))),
-            gamma: Set(config.gamma),
-            lambda: Set(config.lambda),
-            epsilon_clip: Set(config.epsilon_clip),
-            critic_weight: Set(config.critic_weight),
-            entropy_weight: Set(config.entropy_weight),
-            learning_rate: Set(config.learning_rate),
-            epochs: Set(config.epochs as u32),
-            batch_size: Set(config.batch_size as u32),
-            clip_grad: Set(payload.clip_grad.unwrap_or(100.0)),
-        })
-        .await
-        .expect("Failed to insert config into database");
+    let result = state.db.get_config(&payload.name).await;
+
+    if let Ok(Some(existing)) = result {
+        if cmp_configs(&existing, &payload) {
+            response = (
+                StatusCode::CONFLICT,
+                Json(json!({"message": "Using existing profile."})),
+            );
+        } else {
+            return (
+                StatusCode::CONFLICT,
+                Json(json!({"message": "Config already exists with different configuration."})),
+            );
+        }
+    } else {
+        let result = state
+            .db
+            .insert_config(crate::entities::config::ActiveModel {
+                name: Set(payload.name.clone()),
+                description: Set(Some(payload.description.clone().unwrap_or("".to_string()))),
+                gamma: Set(config.gamma),
+                lambda: Set(config.lambda),
+                epsilon_clip: Set(config.epsilon_clip),
+                critic_weight: Set(config.critic_weight),
+                entropy_weight: Set(config.entropy_weight),
+                learning_rate: Set(config.learning_rate),
+                epochs: Set(config.epochs as u32),
+                batch_size: Set(config.batch_size as u32),
+                clip_grad: Set(payload.clip_grad.unwrap_or(100.0)),
+            })
+            .await;
+
+        if let Err(e) = result {
+            eprintln!("Database error: {}", e);
+            response = (
+                StatusCode::INTERNAL_SERVER_ERROR,
+                Json(json!({"message": "Failed to save config to database."})),
+            );
+        }
+    }
 
     let profile = Profile {
         name: payload.name,
@@ -66,11 +107,7 @@ async fn create_profile(
     };
 
     profiles.push(profile);
-    (
-        StatusCode::OK,
-        Json(json!({
-            "message": format!("Successfully created profile!")})),
-    )
+    response
 }
 
 fn set_config(payload: &ConfigParams) -> PPOTrainingConfig {
