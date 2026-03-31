@@ -37,7 +37,7 @@ async fn create_transition(
             return (
                 StatusCode::NOT_FOUND,
                 Json(json!({
-                    "error": format!("did not find profile with id {}", payload.name)
+                    "error": format!("did not find profile with name {}", payload.name)
                 })),
             );
         }
