@@ -1,4 +1,6 @@
+use crate::storage::db::DB;
 use axum::Router;
+use dotenv::dotenv;
 use network::profile::Profile;
 use std::sync::Arc;
 use tokio::sync::Mutex;
@@ -8,6 +10,7 @@ use tower_http::services::ServeDir;
 mod config;
 mod routes;
 // importing models
+mod entities;
 mod env;
 mod models;
 mod network;
@@ -18,12 +21,20 @@ mod tests;
 #[derive(Clone)]
 struct AppState {
     profiles: Arc<Mutex<Vec<Profile>>>,
+    db: DB,
 }
 
 #[tokio::main]
 async fn main() {
+    dotenv().ok();
+    let db = DB::new().await.expect("Failed to connect to database");
+    db.sync_schema()
+        .await
+        .expect("Failed to synchronize database schema");
+
     let state = AppState {
         profiles: Arc::new(Mutex::new(Vec::new())),
+        db: db.clone(),
     };
 
     let app = Router::new()
@@ -42,4 +53,5 @@ async fn main() {
     println!("Server running on http://localhost:3000");
     let listener = tokio::net::TcpListener::bind("0.0.0.0:3000").await.unwrap();
     axum::serve(listener, app).await.unwrap();
+    db.close().await.expect("Failed to close database");
 }
