@@ -6,17 +6,17 @@ use serde::{Deserialize, Serialize};
 #[sea_orm(table_name = "config")]
 pub struct Model {
     #[sea_orm(primary_key)]
-    name: String,
-    description: Option<String>,
-    gamma: ElemType,
-    lambda: ElemType,
-    epsilon_clip: ElemType,
-    critic_weight: ElemType,
-    entropy_weight: ElemType,
-    learning_rate: ElemType,
-    epochs: u32,
-    batch_size: u32,
-    clip_grad: f32,
+    pub name: String,
+    pub description: Option<String>,
+    pub gamma: ElemType,
+    pub lambda: ElemType,
+    pub epsilon_clip: ElemType,
+    pub critic_weight: ElemType,
+    pub entropy_weight: ElemType,
+    pub learning_rate: ElemType,
+    pub epochs: u32,
+    pub batch_size: u32,
+    pub clip_grad: f32,
 }
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
 pub enum Relation {}

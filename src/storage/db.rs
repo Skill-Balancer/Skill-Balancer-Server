@@ -2,7 +2,11 @@ use std::time::Duration;
 
 use sea_orm::{ActiveModelTrait, ConnectOptions, Database, DatabaseConnection, DbErr, EntityTrait};
 
-use crate::{entities::config, env};
+use crate::{
+    entities::config,
+    env::{self, data_dir},
+    storage::utils::create_dir,
+};
 
 #[derive(Clone)]
 pub struct DB {
@@ -11,6 +15,8 @@ pub struct DB {
 
 impl DB {
     pub async fn new() -> Result<Self, DbErr> {
+        create_dir(&data_dir());
+        println!("Database URL: {}", env::data_dir());
         let mut opt = ConnectOptions::new(format!("{}?mode=rwc", env::db_url()));
         opt.max_connections(100)
             .min_connections(5)
