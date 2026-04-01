@@ -110,7 +110,7 @@ impl<B: AutodiffBackend> PPOTrainer<B> {
         }
         self.last_state = Some(env.state.clone());
         self.action = PPO::<GameEnv, B, Net<B>>::react_with_model(&env.state, &self.model);
-        self.action.expect("This error should never happen").into() 
+        self.action.expect("This error should never happen").into()
     }
 
     pub fn train(&mut self) {
