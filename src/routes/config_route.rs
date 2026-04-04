@@ -35,19 +35,6 @@ pub fn config_route() -> Router<AppState> {
     Router::new().route("/config", post(create_profile))
 }
 
-fn cmp_configs(db_conf: &config::Model, request_config: &ConfigParams) -> bool {
-    let config = set_config(&request_config);
-    db_conf.gamma == config.gamma
-        && db_conf.lambda == config.lambda
-        && db_conf.epsilon_clip == config.epsilon_clip
-        && db_conf.critic_weight == config.critic_weight
-        && db_conf.entropy_weight == config.entropy_weight
-        && db_conf.learning_rate == config.learning_rate
-        && db_conf.epochs == config.epochs as u32
-        && db_conf.batch_size == config.batch_size as u32
-        && db_conf.clip_grad == request_config.clip_grad.unwrap_or(100.0)
-}
-
 async fn create_profile(
     State(state): State<AppState>,
     Json(payload): Json<ConfigParams>,
@@ -108,6 +95,19 @@ async fn create_profile(
 
     profiles.push(profile);
     response
+}
+
+fn cmp_configs(db_conf: &config::Model, request_config: &ConfigParams) -> bool {
+    let config = set_config(&request_config);
+    db_conf.gamma == config.gamma
+        && db_conf.lambda == config.lambda
+        && db_conf.epsilon_clip == config.epsilon_clip
+        && db_conf.critic_weight == config.critic_weight
+        && db_conf.entropy_weight == config.entropy_weight
+        && db_conf.learning_rate == config.learning_rate
+        && db_conf.epochs == config.epochs as u32
+        && db_conf.batch_size == config.batch_size as u32
+        && db_conf.clip_grad == request_config.clip_grad.unwrap_or(100.0)
 }
 
 fn set_config(payload: &ConfigParams) -> PPOTrainingConfig {
