@@ -24,3 +24,4 @@ askama = "0.15.4"
 tower-http = { version = "0.6.8", features = ["fs"] }
 burn-store = "0.20.1"
 sea-orm = { version = "2.0.0-rc", features = ["sqlx-sqlite","runtime-tokio", "macros", "schema-sync", "entity-registry"] }
+rand = "0.10.0"

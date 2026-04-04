@@ -62,6 +62,8 @@ const OUTPUT_SIZE: usize = 5; // TODO: Make configuable
 
 const MEMORY_SIZE: usize = 512;
 
+const ACTION_AMOUNT: usize = 5;
+
 pub const TRAIN_EVERY: usize = MEMORY_SIZE;
 
 pub struct PPOTrainer<B: AutodiffBackend> {
@@ -71,7 +73,7 @@ pub struct PPOTrainer<B: AutodiffBackend> {
     pub config: PPOTrainingConfig,
     pub steps: usize,
     last_state: Option<GameState>,
-    action: Option<GameAction>,
+    action: Option<GameAction<ACTION_AMOUNT>>,
 }
 
 impl<B: AutodiffBackend> PPOTrainer<B> {
