@@ -1,8 +1,8 @@
 use crate::models::ppo::PPOTrainer;
-use burn::backend::{Autodiff, NdArray};
+use burn::backend::{Autodiff, Wgpu};
 use burn_rl::base::ElemType;
 
-type Backend = Autodiff<NdArray<ElemType>>;
+type Backend = Autodiff<Wgpu<ElemType>>;
 
 pub struct Profile {
     pub name: String,
