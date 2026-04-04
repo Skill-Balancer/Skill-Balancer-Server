@@ -113,7 +113,7 @@ impl<B: AutodiffBackend> PPOTrainer<B> {
         match self.action {
             Some(val) => val.into(),
             None => 0,
-        } 
+        }
     }
 
     pub fn train(&mut self) {

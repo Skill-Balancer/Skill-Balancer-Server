@@ -28,6 +28,6 @@ async fn list_profiles(State(state): State<AppState>) -> impl IntoResponse {
             description: profile.description.clone(),
         });
     }
-    
+
     (StatusCode::OK, Json(json!({ "profiles": values })))
 }
