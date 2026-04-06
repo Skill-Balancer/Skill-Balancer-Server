@@ -3,7 +3,7 @@ use crate::agent::PPOTrainingConfig;
 use crate::base::{get_batch, sample_indices, Agent, ElemType, Environment, Memory, MemoryIndices};
 use crate::utils::{
     elementwise_min, get_elem, ref_to_action_tensor, ref_to_not_done_tensor, ref_to_reward_tensor,
-    ref_to_state_tensor, sample_action_from_tensor, to_state_tensor, update_parameters,
+    ref_to_state_tensor, sample_action_from_tensor, update_parameters,
 };
 use burn::module::AutodiffModule;
 use burn::nn::loss::{MseLoss, Reduction};
@@ -24,7 +24,7 @@ impl<E: Environment, B: Backend, M: PPOModel<B>> Agent<E> for PPO<E, B, M> {
         sample_action_from_tensor::<E::ActionType, B>(
             self.model
                 .as_ref()?
-                .infer(to_state_tensor(*state).unsqueeze()),
+                .infer(ref_to_state_tensor(state).unsqueeze()),
         )
     }
 }
@@ -41,7 +41,9 @@ impl<E: Environment, B: Backend, M: PPOModel<B>> PPO<E, B, M> {
 
     pub fn react_with_model(state: &E::StateType, model: &M) -> Option<E::ActionType> {
         sample_action_from_tensor::<E::ActionType, _>(
-            model.forward(to_state_tensor(*state).unsqueeze()).policies,
+            model
+                .forward(ref_to_state_tensor(state).unsqueeze())
+                .policies,
         )
     }
 }

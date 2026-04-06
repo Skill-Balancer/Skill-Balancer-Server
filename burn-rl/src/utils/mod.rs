@@ -7,24 +7,12 @@ use burn::tensor::{Int, Tensor};
 use rand::distributions::{Distribution, WeightedIndex};
 use rand::thread_rng;
 
-pub(crate) fn to_state_tensor<S: State, B: Backend>(state: S) -> Tensor<B, 1> {
-    state.to_tensor()
-}
-
 pub(crate) fn ref_to_state_tensor<S: State, B: Backend>(state: &S) -> Tensor<B, 1> {
-    to_state_tensor(*state)
-}
-
-pub(crate) fn convert_tensor_to_action<A: Action, B: Backend>(output: Tensor<B, 2>) -> A {
-    (output.argmax(1).to_data().as_slice::<i64>().unwrap()[0] as u32).into()
-}
-
-pub(crate) fn to_action_tensor<A: Action, B: Backend>(action: A) -> Tensor<B, 1, Int> {
-    Tensor::<B, 1, Int>::from_ints([action.into() as i32], &Default::default())
+    (*state).to_tensor()
 }
 
 pub(crate) fn ref_to_action_tensor<A: Action, B: Backend>(action: &A) -> Tensor<B, 1, Int> {
-    to_action_tensor(*action)
+    Tensor::<B, 1, Int>::from_ints([(*action).into() as i32], &Default::default())
 }
 
 pub(crate) fn to_reward_tensor<B: Backend>(reward: impl Into<ElemType> + Clone) -> Tensor<B, 1> {
