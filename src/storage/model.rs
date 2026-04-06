@@ -74,7 +74,7 @@ impl CheckPoint {
     }
 
     pub fn export<B: Backend>(&self, model: Net<B>, device: &B::Device) -> Result<String, String> {
-        create_dir(&format!("{}/{}",&exports_dir(),&self.config_name));
+        create_dir(&format!("{}/{}", &exports_dir(), &self.config_name));
         let model = self.load(model, device)?;
         let mut store = SafetensorsStore::from_file(format!(
             "{}/{}/{}.safetensors",
@@ -86,7 +86,12 @@ impl CheckPoint {
 
         let res = model.save_into(&mut store);
         match res {
-            Ok(_) => Ok(format!("{}/{}/{}.safetensors", &exports_dir(), &self.config_name, &self.id)),
+            Ok(_) => Ok(format!(
+                "{}/{}/{}.safetensors",
+                &exports_dir(),
+                &self.config_name,
+                &self.id
+            )),
             Err(e) => Err(format!("Failed to export model: {}", e)),
         }
     }
@@ -120,4 +125,14 @@ pub fn list_exports(config_name: String) -> Vec<CheckPoint> {
         }
     }
     exports
+}
+
+pub fn delete_config_files(config_name: &String) {
+    let checkpoint_dir = format!("{}/{}", checkpoints_dir(), config_name);
+    let export_dir = format!("{}/{}", exports_dir(), config_name);
+    for dir in [checkpoint_dir, export_dir] {
+        if std::fs::remove_dir_all(&dir).is_err() {
+            eprintln!("Failed to delete file: {}", dir);
+        }
+    }
 }

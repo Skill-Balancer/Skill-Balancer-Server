@@ -1,6 +1,7 @@
 use crate::AppState;
 use crate::entities::config;
 use crate::network::profile::Profile;
+use crate::storage::model::delete_config_files;
 use axum::extract::State;
 use axum::response::IntoResponse;
 use axum::{Json, Router, http::StatusCode, routing::post};
@@ -132,6 +133,7 @@ async fn try_update_config(
     let result = state.db.update_config(config).await;
     match result {
         Ok(new_config) => {
+            delete_config_files(&new_config.name);
             update_profile(state, new_config).await;
             (
                 StatusCode::OK,
