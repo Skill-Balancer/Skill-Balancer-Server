@@ -8,6 +8,9 @@ pub struct Model {
     #[sea_orm(primary_key)]
     pub name: String,
     pub description: Option<String>,
+    pub state_size: u32,
+    pub action_size: u32,
+    pub train_every: u32,
     pub gamma: ElemType,
     pub lambda: ElemType,
     pub epsilon_clip: ElemType,

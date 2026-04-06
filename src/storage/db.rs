@@ -16,7 +16,6 @@ pub struct DB {
 impl DB {
     pub async fn new() -> Result<Self, DbErr> {
         create_dir(&data_dir());
-        println!("Database URL: {}", env::data_dir());
         let mut opt = ConnectOptions::new(format!("{}?mode=rwc", env::db_url()));
         opt.max_connections(100)
             .min_connections(5)
@@ -47,6 +46,10 @@ impl DB {
 
     pub async fn insert_config(&self, config: config::ActiveModel) -> Result<config::Model, DbErr> {
         config.insert(&self.connection).await
+    }
+
+    pub async fn update_config(&self, config: config::ActiveModel) -> Result<config::Model, DbErr> {
+        config.update(&self.connection).await
     }
 
     #[allow(unused)]

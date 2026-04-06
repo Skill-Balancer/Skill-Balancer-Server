@@ -10,8 +10,11 @@ http:
     type: json
     data: |-
       {
-        "name": "ikemen",
+        "name": "Ikemen",
         "description": "THIS IS A TEST",
+        "allow_overwrite": true,
+        "state_size": 4,
+        "action_size": 2,
         "gamma": 0.99
       }
   auth: inherit
