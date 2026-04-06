@@ -76,9 +76,11 @@ async fn create_profile(
 }
 
 async fn update_profile(state: &AppState, config: config::Model) {
-    let mut profiles = state.profiles.lock().await;
-    profiles.push(Profile::from(config));
-    println!("Profile '{}' is now active.", profiles.last().unwrap().name);
+    let mut profile = state.profile.lock().await;
+    let new_profile = Profile::from(config);
+    let profile_name = new_profile.name.clone();
+    *profile = Some(new_profile);
+    println!("Profile '{}' is now active.", profile_name);
 }
 
 async fn try_cmp_configs(

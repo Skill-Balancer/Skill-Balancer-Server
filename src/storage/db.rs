@@ -56,4 +56,8 @@ impl DB {
     pub async fn get_config(&self, id: &String) -> Result<Option<config::Model>, DbErr> {
         config::Entity::find_by_id(id).one(&self.connection).await
     }
+
+    pub async fn get_all_configs(&self) -> Result<Vec<config::Model>, DbErr> {
+        config::Entity::find().all(&self.connection).await
+    }
 }

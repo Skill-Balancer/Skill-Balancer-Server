@@ -18,16 +18,13 @@ pub fn all_config_route() -> Router<AppState> {
 }
 
 async fn list_profiles(State(state): State<AppState>) -> impl IntoResponse {
-    let profiles = state.profiles.lock().await;
-    let profiles = profiles.iter();
-
-    let mut values = vec![];
-    for profile in profiles {
-        values.push(ProfilesJSON {
-            name: profile.name.clone(),
-            description: profile.description.clone(),
-        });
+    match state.db.get_all_configs().await {
+        Ok(configs) => (StatusCode::OK, Json(json!({ "configs": configs }))),
+        Err(_) => {
+            return (
+                StatusCode::INTERNAL_SERVER_ERROR,
+                Json(json!({ "message": "Failed to retrieve profiles" })),
+            );
+        }
     }
-
-    (StatusCode::OK, Json(json!({ "profiles": values })))
 }

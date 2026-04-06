@@ -29,28 +29,25 @@ async fn create_transition(
         reward: payload.prev_reward,
     };
 
-    let mut profiles = state.profiles.lock().await;
+    match state.profile.lock().await.as_mut() {
+        Some(profile) => {
+            let action = profile.trainer.step(&game);
 
-    let profile = match profiles.iter_mut().find(|p| p.name == payload.name) {
-        Some(val) => val,
+            (
+                StatusCode::OK,
+                Json(json!({
+                    "message": format!("Stepped successfully"),
+                    "action": action,
+                })),
+            )
+        }
         None => {
             return (
                 StatusCode::NOT_FOUND,
                 Json(json!({
-                    "error": format!("did not find profile with name {}", payload.name)
+                    "message": format!("Could not find profile"),
                 })),
             );
         }
-    };
-
-    let action = profile.trainer.step(&game);
-    drop(profiles);
-
-    (
-        StatusCode::OK,
-        Json(json!({
-            "message": format!("Stepped successfully"),
-            "action": action,
-        })),
-    )
+    }
 }

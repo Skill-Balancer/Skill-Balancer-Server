@@ -5,13 +5,8 @@ info:
 
 http:
   method: GET
-  url: "{{BASE_URL}}/models/save/{{model_id}}.mpk"
+  url: "{{BASE_URL}}/models/checkpoints/{{config}}/{{model_id}}.mpk"
   auth: inherit
-
-runtime:
-  variables:
-    - name: model_id
-      value: test
 
 settings:
   encodeUrl: true

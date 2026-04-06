@@ -19,6 +19,13 @@ http:
       }
   auth: inherit
 
+runtime:
+  scripts:
+    - type: before-request
+      code: |-
+        const conf = req.body["name"]
+        bru.setVar("config",conf)
+
 settings:
   encodeUrl: true
   timeout: 0

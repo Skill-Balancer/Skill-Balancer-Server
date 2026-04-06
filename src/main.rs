@@ -20,7 +20,7 @@ mod tests;
 
 #[derive(Clone)]
 struct AppState {
-    profiles: Arc<Mutex<Vec<Profile>>>,
+    profile: Arc<Mutex<Option<Profile>>>,
     db: DB,
 }
 
@@ -33,7 +33,7 @@ async fn main() {
         .expect("Failed to synchronize database schema");
 
     let state = AppState {
-        profiles: Arc::new(Mutex::new(Vec::new())),
+        profile: Arc::new(Mutex::new(None)),
         db: db.clone(),
     };
 

@@ -5,13 +5,8 @@ info:
 
 http:
   method: GET
-  url: "{{BASE_URL}}/load/{{name}}"
+  url: "{{BASE_URL}}/load/{{model_id}}"
   auth: inherit
-
-runtime:
-  variables:
-    - name: model_id
-      value: test
 
 settings:
   encodeUrl: true
