@@ -1,5 +1,5 @@
 use crate::AppState;
-use crate::entities::config;
+use crate::entities::config::{self, StringVec};
 use crate::network::profile::Profile;
 use crate::storage::model::delete_config_files;
 use axum::extract::State;
@@ -9,7 +9,7 @@ use burn::grad_clipping::GradientClippingConfig;
 use burn_rl::agent::PPOTrainingConfig;
 use burn_rl::base::ElemType;
 use sea_orm::ActiveValue::Set;
-use sea_orm::TryIntoModel;
+use sea_orm::{IntoActiveModel, TryIntoModel};
 use serde::{Deserialize, Serialize};
 use serde_json::json;
 
@@ -18,8 +18,8 @@ pub struct ConfigParams {
     name: String,
     description: Option<String>,
 
-    state_size: u32,
-    action_size: u32,
+    state: Vec<String>,
+    action: Vec<String>,
     train_every: Option<u32>,
 
     // PPO config (completely optional and will be handled if none)
@@ -34,6 +34,7 @@ pub struct ConfigParams {
     clip_grad: Option<f32>,
 
     allow_overwrite: Option<bool>,
+    allow_rename: Option<bool>,
 }
 
 pub fn config_route() -> Router<AppState> {
@@ -57,12 +58,15 @@ async fn create_profile(
     };
 
     let allow_overwrite = payload.allow_overwrite.unwrap_or(false);
+    let allow_rename = payload.allow_rename.unwrap_or(false);
 
     match (
         state.db.get_config(&request_model.name).await,
         allow_overwrite,
     ) {
-        (Ok(Some(db_model)), false) => try_cmp_configs(&state, &db_model, &request_model).await,
+        (Ok(Some(db_model)), false) => {
+            try_cmp_configs(&state, &db_model, &request_model, allow_rename).await
+        }
         (Ok(Some(_)), true) => try_update_config(&state, request_active_model).await,
         (Ok(None), _) => try_insert_config(&state, request_active_model).await,
         (Err(e), _) => {
@@ -87,9 +91,29 @@ async fn try_cmp_configs(
     state: &AppState,
     db_model: &config::Model,
     request_model: &config::Model,
+    allow_rename: bool,
 ) -> (StatusCode, Json<serde_json::Value>) {
-    if cmp_configs(&db_model, &request_model) {
+    if cmp_configs(&db_model, &request_model, allow_rename) {
         update_profile(state, db_model.clone()).await;
+        if allow_rename && !names_match(db_model, request_model) {
+            let new_model = config::ActiveModel {
+                state: Set(request_model.state.clone()),
+                action: Set(request_model.action.clone()),
+                ..request_model.clone().into_active_model()
+            };
+            return match state.db.update_config(new_model).await {
+                Ok(_) => (
+                    StatusCode::OK,
+                    Json(json!({"message": "Config variables renamed."})),
+                ),
+
+                Err(_) => (
+                    StatusCode::INTERNAL_SERVER_ERROR,
+                    Json(json!({"message": "Failed to rename config in database."})),
+                ),
+            };
+        };
+
         (
             StatusCode::OK,
             Json(json!({"message": "Using existing profile."})),
@@ -100,6 +124,10 @@ async fn try_cmp_configs(
             Json(json!({"message": "Config already exists with different configuration."})),
         )
     }
+}
+
+fn names_match(db_model: &config::Model, request_model: &config::Model) -> bool {
+    db_model.state == request_model.state && db_model.action == request_model.action
 }
 
 async fn try_insert_config(
@@ -149,7 +177,7 @@ async fn try_update_config(
     }
 }
 
-fn cmp_configs(db_conf: &config::Model, request: &config::Model) -> bool {
+fn cmp_configs(db_conf: &config::Model, request: &config::Model, allow_rename: bool) -> bool {
     db_conf.gamma == request.gamma
         && db_conf.lambda == request.lambda
         && db_conf.epsilon_clip == request.epsilon_clip
@@ -159,8 +187,10 @@ fn cmp_configs(db_conf: &config::Model, request: &config::Model) -> bool {
         && db_conf.epochs == request.epochs
         && db_conf.batch_size == request.batch_size
         && db_conf.clip_grad == request.clip_grad
-        && db_conf.state_size == request.state_size
-        && db_conf.action_size == request.action_size
+        && ((allow_rename && db_conf.state.0.len() == request.state.0.len())
+            || db_conf.state == request.state)
+        && ((allow_rename && db_conf.action.0.len() == request.action.0.len())
+            || db_conf.action == request.action)
         && db_conf.train_every == request.train_every
 }
 
@@ -170,8 +200,8 @@ fn get_active_model_from_config(config: &ConfigParams) -> crate::entities::confi
     crate::entities::config::ActiveModel {
         name: Set(config.name.clone()),
         description: Set(config.description.clone()),
-        state_size: Set(config.state_size),
-        action_size: Set(config.action_size),
+        state: Set(StringVec(config.state.clone())),
+        action: Set(StringVec(config.action.clone())),
         train_every: Set(config.train_every.unwrap_or(300)),
         gamma: Set(config.gamma.unwrap_or(defaults.gamma)),
         lambda: Set(config.lambda.unwrap_or(defaults.lambda)),

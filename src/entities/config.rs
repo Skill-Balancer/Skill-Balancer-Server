@@ -8,8 +8,8 @@ pub struct Model {
     #[sea_orm(primary_key)]
     pub name: String,
     pub description: Option<String>,
-    pub state_size: u32,
-    pub action_size: u32,
+    pub state: StringVec,
+    pub action: StringVec,
     pub train_every: u32,
     pub gamma: ElemType,
     pub lambda: ElemType,
@@ -23,5 +23,8 @@ pub struct Model {
 }
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
 pub enum Relation {}
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize, FromJsonQueryResult)]
+pub struct StringVec(pub Vec<String>);
 
 impl ActiveModelBehavior for ActiveModel {}
