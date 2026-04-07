@@ -12,7 +12,7 @@ use serde_json::json;
 #[derive(Debug, Serialize, Deserialize)]
 pub struct StepParam {
     pub name: String,
-    pub game_state: [ElemType; 4],
+    pub game_state: Vec<ElemType>,
     pub prev_reward: ElemType,
 }
 

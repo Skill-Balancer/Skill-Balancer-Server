@@ -9,6 +9,8 @@ pub struct Profile {
     pub name: String,
     #[allow(unused)]
     pub description: Option<String>,
+    pub state_size: usize,
+    pub action_size: usize,
     pub trainer: PPOTrainer<Backend>,
 }
 

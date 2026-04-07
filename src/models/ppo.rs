@@ -77,9 +77,9 @@ pub struct PPOTrainer<B: AutodiffBackend> {
 }
 
 impl<B: AutodiffBackend> PPOTrainer<B> {
-    pub fn new(config: PPOTrainingConfig, actions_amount: usize) -> Self {
+    pub fn new(config: PPOTrainingConfig,input_size: usize, actions_amount: usize) -> Self {
         Self {
-            model: Net::new(INPUT_SIZE, DENSE_SIZE, actions_amount),
+            model: Net::new(input_size, DENSE_SIZE, actions_amount),
             optimizer: AdamWConfig::new()
                 .with_grad_clipping(config.clip_grad.clone())
                 .init(),
@@ -92,7 +92,7 @@ impl<B: AutodiffBackend> PPOTrainer<B> {
     }
 
     pub fn step(&mut self, env: &GameEnv) -> Result<&GameAction, String> {
-        if let Some(last_state) = self.last_state
+        if let Some(last_state) = self.last_state.clone()
             && let Some(action) = &self.action
         {
             let current_state = &env.state;
