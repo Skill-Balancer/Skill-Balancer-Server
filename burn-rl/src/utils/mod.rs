@@ -12,7 +12,7 @@ pub(crate) fn ref_to_state_tensor<S: State, B: Backend>(state: &S) -> Tensor<B, 
 }
 
 pub(crate) fn ref_to_action_tensor<A: Action, B: Backend>(action: &A) -> Tensor<B, 1, Int> {
-    Tensor::<B, 1, Int>::from_ints([(*action).into() as i32], &Default::default())
+    (*action).to_tensor()
 }
 
 pub(crate) fn to_reward_tensor<B: Backend>(reward: impl Into<ElemType> + Clone) -> Tensor<B, 1> {

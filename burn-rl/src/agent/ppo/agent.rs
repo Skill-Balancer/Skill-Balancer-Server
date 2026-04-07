@@ -19,16 +19,6 @@ pub struct PPO<E: Environment, B: Backend, M: PPOModel<B>> {
     backend: PhantomData<B>,
 }
 
-impl<E: Environment, B: Backend, M: PPOModel<B>> Agent<E> for PPO<E, B, M> {
-    fn react(&self, state: &E::StateType) -> Option<E::ActionType> {
-        sample_action_from_tensor::<E::ActionType, B>(
-            self.model
-                .as_ref()?
-                .infer(ref_to_state_tensor(state).unsqueeze()),
-        )
-    }
-}
-
 impl<E: Environment, B: Backend, M: PPOModel<B>> PPO<E, B, M> {
     pub fn new(model: M) -> Self {
         Self {

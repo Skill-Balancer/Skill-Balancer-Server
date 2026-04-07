@@ -62,8 +62,6 @@ const OUTPUT_SIZE: usize = 5; // TODO: Make configuable
 
 const MEMORY_SIZE: usize = 512;
 
-const ACTION_AMOUNT: usize = 5;
-
 pub const TRAIN_EVERY: usize = MEMORY_SIZE;
 
 pub struct PPOTrainer<B: AutodiffBackend> {
@@ -73,7 +71,7 @@ pub struct PPOTrainer<B: AutodiffBackend> {
     pub config: PPOTrainingConfig,
     pub steps: usize,
     last_state: Option<GameState>,
-    action: Option<GameAction<ACTION_AMOUNT>>,
+    action: Option<GameAction>,
 }
 
 impl<B: AutodiffBackend> PPOTrainer<B> {
@@ -91,7 +89,7 @@ impl<B: AutodiffBackend> PPOTrainer<B> {
         }
     }
 
-    pub fn step(&mut self, env: &GameEnv) -> isize {
+    pub fn step(&mut self, env: &GameEnv) -> &GameAction {
         if let Some(last_state) = self.last_state
             && let Some(action) = self.action
         {
@@ -112,9 +110,9 @@ impl<B: AutodiffBackend> PPOTrainer<B> {
         }
         self.last_state = Some(env.state.clone());
         self.action = PPO::<GameEnv, B, Net<B>>::react_with_model(&env.state, &self.model);
-        match self.action {
-            Some(val) => val.into(),
-            None => 0,
+        match &self.action {
+            Some(val) => val,
+            None => GameAction { actions: vec![0,0]}, // TODO: FIX
         }
     }
 
