@@ -58,7 +58,7 @@ async fn create_profile(
 
     let allow_overwrite = payload.allow_overwrite.unwrap_or(false);
 
-    let response = match (
+    match (
         state.db.get_config(&request_model.name).await,
         allow_overwrite,
     ) {
@@ -72,8 +72,7 @@ async fn create_profile(
                 Json(json!({"message": "Failed to query database for existing config."})),
             )
         }
-    };
-    response
+    }
 }
 
 async fn update_profile(state: &AppState, config: config::Model) {
