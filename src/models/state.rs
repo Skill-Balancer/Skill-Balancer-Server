@@ -19,7 +19,7 @@ impl From<Vec<ElemType>> for GameState {
 impl GameState {
     pub fn new(size: usize) -> Self {
         Self {
-            data: vec![0.0; size]
+            data: vec![0.0; size],
         }
     }
     pub fn len(&self) -> usize {
@@ -31,12 +31,11 @@ impl State for GameState {
     type Data = Vec<ElemType>;
 
     fn to_tensor<B: Backend>(&self) -> Tensor<B, 1> {
-        Tensor::<B, 1>::from_floats(self.data.as_slice(), &Default::default())
+        Tensor::<B, 1>::from_floats(&self.data, &Default::default())
     }
 
     fn size() -> usize {
         panic!("dont use this");
         // it expected the pre defined size but we dont have that anymore
     }
-
 }

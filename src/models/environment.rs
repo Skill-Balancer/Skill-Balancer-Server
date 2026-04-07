@@ -7,7 +7,7 @@ pub struct _GameValues {
     // TODO: make used at some point (it is not necessary now, but it will be)
     pub data: Vec<ElemType>,
     pub reward: ElemType,
-     //why is there a reward here?
+    //why is there a reward here?
 }
 
 #[derive(Debug)]
@@ -23,9 +23,8 @@ impl Environment for GameEnv {
     type RewardType = ElemType;
 
     fn new() -> Self {
-     panic!("When do we use this?") // we dont use this function anywhere it seems like we just make a new gameEnv without any function call
-        }
-
+        panic!("When do we use this?") // we dont use this function anywhere it seems like we just make a new gameEnv without any function call
+    }
 
     fn state(&self) -> Self::StateType {
         self.state.clone()

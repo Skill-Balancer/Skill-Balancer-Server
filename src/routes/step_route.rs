@@ -27,6 +27,7 @@ async fn create_transition(
     let game = GameEnv {
         state: GameState::from(payload.game_state),
         reward: payload.prev_reward,
+        state_size: profile.state_size,
     };
 
     let mut profile = state.profile.lock().await;
