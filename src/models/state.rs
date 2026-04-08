@@ -31,7 +31,7 @@ impl State for GameState {
     type Data = Vec<ElemType>;
 
     fn to_tensor<B: Backend>(&self) -> Tensor<B, 1> {
-        Tensor::<B, 1>::from_floats(&self.data, &Default::default())
+        Tensor::<B, 1>::from_floats(self.data.as_slice(), &Default::default())
     }
 
     fn size() -> usize {
