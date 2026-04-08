@@ -23,10 +23,10 @@ impl Default for PPOTrainingConfig {
             epsilon_clip: 0.2,
             critic_weight: 0.5,
             entropy_weight: 0.01,
-            learning_rate: 0.001,
-            epochs: 8,
+            learning_rate: 0.0003,
+            epochs: 4,
             batch_size: 8,
-            clip_grad: Some(GradientClippingConfig::Value(100.0)),
+            clip_grad: Some(GradientClippingConfig::Value(0.5)),
         }
     }
 }

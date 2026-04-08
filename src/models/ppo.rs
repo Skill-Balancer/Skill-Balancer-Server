@@ -1,6 +1,6 @@
 use burn::{
     Tensor,
-    module::Module,
+    module::{AutodiffModule, Module},
     nn::{Initializer, Linear, LinearConfig},
     optim::{AdamW, AdamWConfig, adaptor::OptimizerAdaptor},
     prelude::Backend,
@@ -103,16 +103,30 @@ impl<B: AutodiffBackend> PPOTrainer<B> {
                 false,
             );
             self.steps += 1;
+            println!(
+                "step: {}, reward: {}, memory size: {}",
+                self.steps,
+                reward,
+                self.memory.len()
+            );
 
             if self.steps % TRAIN_EVERY == 0 {
+                println!("Training PPO model at step {}...", self.steps);
                 self.train();
+                let test_input = Tensor::<B, 2>::zeros([1, INPUT_SIZE], &Default::default());
+                let out = self.model.infer(test_input);
+                println!("Post-train sample output: {:?}", out.to_data());
+                println!("Finished training PPO model at step {}", self.steps);
             }
         }
         self.last_state = Some(env.state.clone());
         self.action = PPO::<GameEnv, B, Net<B>>::react_with_model(&env.state, &self.model);
         match self.action {
             Some(val) => val.into(),
-            None => 0,
+            None => {
+                eprintln!("PPO model failed to select an action. Defaulting to 0.");
+                0
+            }
         }
     }
 
