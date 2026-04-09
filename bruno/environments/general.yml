@@ -2,5 +2,5 @@ name: general
 variables:
   - name: BASE_URL
     value: http://localhost:3000
-  - name: name
+  - name: model_id
     value: ikemen

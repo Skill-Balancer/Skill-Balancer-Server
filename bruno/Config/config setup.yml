@@ -10,11 +10,22 @@ http:
     type: json
     data: |-
       {
-        "name": "ikemen",
+        "name": "Ikemen",
         "description": "THIS IS A TEST",
+        "allow_overwrite": true,
+        "allow_rename": true,
+        "state": ["p1_health", "p2_health"],
+        "actions": ["p1_atk_mult", "p2_atk_mult"],
         "gamma": 0.99
       }
   auth: inherit
+
+runtime:
+  scripts:
+    - type: before-request
+      code: |-
+        const conf = req.body["name"]
+        bru.setVar("config",conf)
 
 settings:
   encodeUrl: true

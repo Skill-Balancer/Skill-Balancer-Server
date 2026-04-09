@@ -5,8 +5,8 @@ pub fn data_dir() -> String {
     }
 }
 
-pub fn saves_dir() -> String {
-    format!("{}/save", data_dir())
+pub fn checkpoints_dir() -> String {
+    format!("{}/checkpoints", data_dir())
 }
 
 pub fn exports_dir() -> String {
