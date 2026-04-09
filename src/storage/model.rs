@@ -98,18 +98,18 @@ impl CheckPoint {
 }
 
 pub fn list_checkpoints(config_name: String) -> Vec<CheckPoint> {
-    let mut saves = Vec::new();
+    let mut checkpoints = Vec::new();
     if let Ok(entries) = std::fs::read_dir(format!("{}/{}", checkpoints_dir(), config_name)) {
         for entry in entries.flatten() {
             if let Some(file_name) = entry.file_name().to_str() {
                 if file_name.ends_with(".mpk") {
                     let model_id = file_name.trim_end_matches(".mpk").to_string();
-                    saves.push(CheckPoint::new(config_name.clone(), model_id));
+                    checkpoints.push(CheckPoint::new(config_name.clone(), model_id));
                 }
             }
         }
     }
-    saves
+    checkpoints
 }
 
 pub fn list_exports(config_name: String) -> Vec<CheckPoint> {
@@ -131,7 +131,9 @@ pub fn delete_config_files(config_name: &String) {
     let checkpoint_dir = format!("{}/{}", checkpoints_dir(), config_name);
     let export_dir = format!("{}/{}", exports_dir(), config_name);
     for dir in [checkpoint_dir, export_dir] {
-        if std::fs::remove_dir_all(&dir).is_err() {
+        if std::fs::exists(&dir).is_ok_and(|exists| exists)
+            && std::fs::remove_dir_all(&dir).is_err()
+        {
             eprintln!("Failed to delete file: {}", dir);
         }
     }

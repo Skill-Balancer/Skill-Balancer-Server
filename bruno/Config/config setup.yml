@@ -12,10 +12,10 @@ http:
       {
         "name": "Ikemen",
         "description": "THIS IS A TEST",
-        "allow_overwrite": false,
+        "allow_overwrite": true,
         "allow_rename": true,
         "state": ["p1_health", "p2_health"],
-        "action": ["p1_atk_mult", "p2_atk_mult"],
+        "actions": ["p1_atk_mult", "p2_atk_mult"],
         "gamma": 0.99
       }
   auth: inherit

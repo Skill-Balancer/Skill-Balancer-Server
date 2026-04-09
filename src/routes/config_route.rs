@@ -19,7 +19,7 @@ pub struct ConfigParams {
     description: Option<String>,
 
     state: Vec<String>,
-    action: Vec<String>,
+    actions: Vec<String>,
     train_every: Option<u32>,
 
     // PPO config (completely optional and will be handled if none)
@@ -98,7 +98,7 @@ async fn try_cmp_configs(
         if allow_rename && !names_match(db_model, request_model) {
             let new_model = config::ActiveModel {
                 state: Set(request_model.state.clone()),
-                action: Set(request_model.action.clone()),
+                actions: Set(request_model.actions.clone()),
                 ..request_model.clone().into_active_model()
             };
             return match state.db.update_config(new_model).await {
@@ -127,7 +127,7 @@ async fn try_cmp_configs(
 }
 
 fn names_match(db_model: &config::Model, request_model: &config::Model) -> bool {
-    db_model.state == request_model.state && db_model.action == request_model.action
+    db_model.state == request_model.state && db_model.actions == request_model.actions
 }
 
 async fn try_insert_config(
@@ -189,8 +189,8 @@ fn cmp_configs(db_conf: &config::Model, request: &config::Model, allow_rename: b
         && db_conf.clip_grad == request.clip_grad
         && ((allow_rename && db_conf.state.0.len() == request.state.0.len())
             || db_conf.state == request.state)
-        && ((allow_rename && db_conf.action.0.len() == request.action.0.len())
-            || db_conf.action == request.action)
+        && ((allow_rename && db_conf.actions.0.len() == request.actions.0.len())
+            || db_conf.actions == request.actions)
         && db_conf.train_every == request.train_every
 }
 
@@ -201,7 +201,7 @@ fn get_active_model_from_config(config: &ConfigParams) -> crate::entities::confi
         name: Set(config.name.clone()),
         description: Set(config.description.clone()),
         state: Set(StringVec(config.state.clone())),
-        action: Set(StringVec(config.action.clone())),
+        actions: Set(StringVec(config.actions.clone())),
         train_every: Set(config.train_every.unwrap_or(300)),
         gamma: Set(config.gamma.unwrap_or(defaults.gamma)),
         lambda: Set(config.lambda.unwrap_or(defaults.lambda)),

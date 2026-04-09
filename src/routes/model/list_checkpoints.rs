@@ -2,8 +2,8 @@ use crate::{AppState, storage::model::list_checkpoints};
 use axum::{Json, Router, extract::State, http::StatusCode, response::IntoResponse, routing::get};
 use serde_json::json;
 
-pub fn list_saves_route() -> Router<AppState> {
-    return Router::new().route("/save", get(handle_saves_model));
+pub fn list_checkpoints_route() -> Router<AppState> {
+    return Router::new().route("/checkpoint", get(handle_saves_model));
 }
 
 async fn handle_saves_model(State(state): State<AppState>) -> impl IntoResponse {

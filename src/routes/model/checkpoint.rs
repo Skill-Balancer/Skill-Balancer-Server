@@ -8,11 +8,11 @@ use axum::{
 };
 use serde_json::json;
 
-pub fn save_model_route() -> Router<AppState> {
-    return Router::new().route("/save/{id}", get(handle_save_model));
+pub fn checkpoint_route() -> Router<AppState> {
+    return Router::new().route("/checkpoint/{id}", get(handle_checkpoint));
 }
 
-async fn handle_save_model(
+async fn handle_checkpoint(
     Path(id): Path<String>,
     State(state): State<AppState>,
 ) -> impl IntoResponse {
@@ -24,7 +24,7 @@ async fn handle_save_model(
             (
                 StatusCode::OK,
                 Json(json!({
-                    "message": format!("Model saved"),
+                    "message": format!("Model checkpoint created"),
                     "url": checkpoint.to_url(),
                 })),
             )

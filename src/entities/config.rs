@@ -9,7 +9,7 @@ pub struct Model {
     pub name: String,
     pub description: Option<String>,
     pub state: StringVec,
-    pub action: StringVec,
+    pub actions: StringVec,
     pub train_every: u32,
     pub gamma: ElemType,
     pub lambda: ElemType,
