@@ -8,6 +8,12 @@ pub fn data_dir() -> String {
 pub fn checkpoints_dir() -> String {
     format!("{}/checkpoints", data_dir())
 }
+pub fn print_steps() -> bool {
+    match std::env::var("PRINT_STEPS") {
+        Ok(value) => value == "true",
+        Err(_) => false,
+    }
+}
 
 pub fn exports_dir() -> String {
     format!("{}/export", data_dir())

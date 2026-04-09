@@ -1,6 +1,6 @@
 use burn::{
     Tensor,
-    module::{AutodiffModule, Module},
+    module::Module,
     nn::{Initializer, Linear, LinearConfig},
     optim::{AdamW, AdamWConfig, adaptor::OptimizerAdaptor},
     prelude::Backend,
@@ -14,7 +14,10 @@ use burn_rl::{
     base::{Memory, Model},
 };
 
-use crate::models::{action::GameAction, environment::GameEnv, state::GameState};
+use crate::{
+    env::print_steps,
+    models::{action::GameAction, environment::GameEnv, state::GameState},
+};
 
 #[derive(Module, Debug)]
 pub struct Net<B: Backend> {
@@ -103,19 +106,18 @@ impl<B: AutodiffBackend> PPOTrainer<B> {
                 false,
             );
             self.steps += 1;
-            println!(
-                "step: {}, reward: {}, memory size: {}",
-                self.steps,
-                reward,
-                self.memory.len()
-            );
+            if print_steps() {
+                println!(
+                    "step: {}, reward: {}, memory size: {}",
+                    self.steps,
+                    reward,
+                    self.memory.len()
+                );
+            }
 
-            if self.steps % TRAIN_EVERY == 0 {
+            if self.steps.is_multiple_of(TRAIN_EVERY) {
                 println!("Training PPO model at step {}...", self.steps);
                 self.train();
-                let test_input = Tensor::<B, 2>::zeros([1, INPUT_SIZE], &Default::default());
-                let out = self.model.infer(test_input);
-                println!("Post-train sample output: {:?}", out.to_data());
                 println!("Finished training PPO model at step {}", self.steps);
             }
         }

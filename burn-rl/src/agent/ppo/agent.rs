@@ -118,7 +118,7 @@ impl<E: Environment, B: AutodiffBackend, M: PPOModel<B> + AutodiffModule<B>> PPO
 
                     let ratios = policy_batch
                         .clone()
-                        .div(old_policy_batch.clamp(1e-8, 1.0))
+                        .div(old_policy_batch.clamp(1e-8, 1.0)) // clamp added to prevent action for being none
                         .gather(1, action_batch);
                     let clipped_ratios = ratios
                         .clone()
@@ -131,7 +131,8 @@ impl<E: Environment, B: AutodiffBackend, M: PPOModel<B> + AutodiffModule<B>> PPO
                     .sum();
                     let critic_loss =
                         MseLoss.forward(expected_return_batch, value_batch, Reduction::Sum);
-                    let policy_negative_entropy = -(policy_batch.clone().clamp(1e-8, 1.0).log() * policy_batch)
+                    let policy_negative_entropy = -(policy_batch.clone().clamp(1e-8, 1.0).log()
+                        * policy_batch) // clamp added to prevent action for being none
                         .sum_dim(1)
                         .mean();
 
