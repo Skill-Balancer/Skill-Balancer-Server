@@ -61,7 +61,6 @@ impl<B: Backend> Model<B, Tensor<B, 2>, PPOOutput<B>, Tensor<B, 2>> for Net<B> {
 }
 const INPUT_SIZE: usize = 4; // TODO: Make configuable
 const DENSE_SIZE: usize = 128;
-const OUTPUT_SIZE: usize = 10; // TODO: Make configuable
 
 const MEMORY_SIZE: usize = 512;
 

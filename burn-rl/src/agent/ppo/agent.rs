@@ -13,6 +13,7 @@ use burn::tensor::Tensor;
 use std::marker::PhantomData;
 
 pub struct PPO<E: Environment, B: Backend, M: PPOModel<B>> {
+    #[allow(unused)]
     model: Option<M>,
     state: PhantomData<E::StateType>,
     action: PhantomData<E::ActionType>,

@@ -7,6 +7,7 @@ type Backend = Autodiff<Wgpu<ElemType>>;
 
 pub struct Profile {
     pub name: String,
+    #[allow(unused)]
     pub description: Option<String>,
     pub trainer: PPOTrainer<Backend>,
 }
