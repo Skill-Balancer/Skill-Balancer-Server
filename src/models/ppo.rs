@@ -78,9 +78,9 @@ pub struct PPOTrainer<B: AutodiffBackend> {
 }
 
 impl<B: AutodiffBackend> PPOTrainer<B> {
-    pub fn new(config: PPOTrainingConfig) -> Self {
+    pub fn new(config: PPOTrainingConfig, actions_amount: usize) -> Self {
         Self {
-            model: Net::new(INPUT_SIZE, DENSE_SIZE, OUTPUT_SIZE),
+            model: Net::new(INPUT_SIZE, DENSE_SIZE, actions_amount),
             optimizer: AdamWConfig::new()
                 .with_grad_clipping(config.clip_grad.clone())
                 .init(),

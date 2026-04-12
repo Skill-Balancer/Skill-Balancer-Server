@@ -25,6 +25,13 @@ pub struct Model {
 pub enum Relation {}
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize, FromJsonQueryResult)]
-pub struct StringVec(pub Vec<String>);
+pub struct StringVec(pub Vec<String>); // very weird definition of something that does not need to be defined
+// it is too ingrained in the rest of the code for me to refactor it now tho
+
+impl StringVec {
+    pub fn length(self) -> usize {
+        self.0.len()
+    }
+}
 
 impl ActiveModelBehavior for ActiveModel {}
