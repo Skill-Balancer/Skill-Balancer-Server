@@ -14,7 +14,10 @@ use burn_rl::{
     base::{Memory, Model},
 };
 
-use crate::models::{action::GameAction, environment::GameEnv, state::GameState};
+use crate::{
+    env::print_steps,
+    models::{action::GameAction, environment::GameEnv, state::GameState},
+};
 
 #[derive(Module, Debug)]
 pub struct Net<B: Backend> {
@@ -103,9 +106,19 @@ impl<B: AutodiffBackend> PPOTrainer<B> {
                 false,
             );
             self.steps += 1;
+            if print_steps() {
+                println!(
+                    "step: {}, reward: {}, memory size: {}",
+                    self.steps,
+                    reward,
+                    self.memory.len()
+                );
+            }
 
-            if self.steps % TRAIN_EVERY == 0 {
+            if self.steps.is_multiple_of(TRAIN_EVERY) {
+                println!("Training PPO model at step {}...", self.steps);
                 self.train();
+                println!("Finished training PPO model at step {}", self.steps);
             }
         }
         self.last_state = Some(env.state.clone());

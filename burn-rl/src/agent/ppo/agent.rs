@@ -31,9 +31,7 @@ impl<E: Environment, B: Backend, M: PPOModel<B>> PPO<E, B, M> {
 
     pub fn react_with_model(state: &E::StateType, model: &M) -> Option<E::ActionType> {
         sample_action_from_tensor::<E::ActionType, _>(
-            model
-                .forward(ref_to_state_tensor(state).unsqueeze())
-                .policies,
+            model.infer(ref_to_state_tensor(state).unsqueeze()),
         )
     }
 }
@@ -110,7 +108,7 @@ impl<E: Environment, B: AutodiffBackend, M: PPOModel<B> + AutodiffModule<B>> PPO
 
                     let ratios = policy_batch
                         .clone()
-                        .div(old_policy_batch)
+                        .div(old_policy_batch.clamp(1e-8, 1.0)) // clamp added to prevent action for being none
                         .gather(1, action_batch);
                     let clipped_ratios = ratios
                         .clone()
@@ -123,7 +121,8 @@ impl<E: Environment, B: AutodiffBackend, M: PPOModel<B> + AutodiffModule<B>> PPO
                     .sum();
                     let critic_loss =
                         MseLoss.forward(expected_return_batch, value_batch, Reduction::Sum);
-                    let policy_negative_entropy = -(policy_batch.clone().log() * policy_batch)
+                    let policy_negative_entropy = -(policy_batch.clone().clamp(1e-8, 1.0).log()
+                        * policy_batch) // clamp added to prevent action for being none
                         .sum_dim(1)
                         .mean();
 

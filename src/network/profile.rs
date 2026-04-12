@@ -8,5 +8,15 @@ pub struct Profile {
     pub name: String,
     pub description: Option<String>,
     pub trainer: PPOTrainer<Backend>,
-    // TODO: add more parameters to allow more developer control.
+}
+
+impl From<crate::entities::config::Model> for Profile {
+    fn from(config: crate::entities::config::Model) -> Self {
+        let trainer_config = burn_rl::agent::PPOTrainingConfig::from(config.clone());
+        Self {
+            name: config.name,
+            description: config.description,
+            trainer: PPOTrainer::<Backend>::new(trainer_config),
+        }
+    }
 }
