@@ -29,9 +29,9 @@ async fn create_transition(
         reward: payload.prev_reward,
     };
 
-    let mut profiles = state.profiles.lock().await;
+    let mut profile = state.profile.lock().await;
 
-    let profile = match profiles.iter_mut().find(|p| p.name == payload.name) {
+    let profile = match profile.as_mut() {
         Some(val) => val,
         None => {
             return (
