@@ -43,14 +43,23 @@ async fn create_transition(
         }
     };
 
-    let action = profile.trainer.step(&game);
-    drop(profiles);
+    let action = match profile.trainer.step(&game) {
+        Ok(val) => val,
+        Err(val) => {
+            return (
+                StatusCode::INTERNAL_SERVER_ERROR,
+                Json(json!({
+                    "message": format!("{}", val),
+                })),
+            );
+        }
+    };
 
     (
         StatusCode::OK,
         Json(json!({
             "message": format!("Stepped successfully"),
-            "action": action, // TODO: fix before committing changes
+            "action": action.actions,
         })),
     )
 }

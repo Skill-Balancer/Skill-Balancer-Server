@@ -58,7 +58,7 @@ impl<B: Backend> Model<B, Tensor<B, 2>, PPOOutput<B>, Tensor<B, 2>> for Net<B> {
 }
 const INPUT_SIZE: usize = 4; // TODO: Make configuable
 const DENSE_SIZE: usize = 128;
-const OUTPUT_SIZE: usize = 5; // TODO: Make configuable
+const OUTPUT_SIZE: usize = 10; // TODO: Make configuable
 
 const MEMORY_SIZE: usize = 512;
 
@@ -89,9 +89,9 @@ impl<B: AutodiffBackend> PPOTrainer<B> {
         }
     }
 
-    pub fn step(&mut self, env: &GameEnv) -> &GameAction {
+    pub fn step(&mut self, env: &GameEnv) -> Result<&GameAction, String> {
         if let Some(last_state) = self.last_state
-            && let Some(action) = self.action
+            && let Some(action) = &self.action
         {
             let current_state = &env.state;
             let reward = env.reward;
@@ -111,8 +111,8 @@ impl<B: AutodiffBackend> PPOTrainer<B> {
         self.last_state = Some(env.state.clone());
         self.action = PPO::<GameEnv, B, Net<B>>::react_with_model(&env.state, &self.model);
         match &self.action {
-            Some(val) => val,
-            None => GameAction { actions: vec![0,0]}, // TODO: FIX
+            Some(val) => Ok(val),
+            None => Err("something went wrong bucko".to_string()),
         }
     }
 

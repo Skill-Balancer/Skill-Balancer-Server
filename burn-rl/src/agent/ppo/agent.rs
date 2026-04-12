@@ -1,6 +1,6 @@
 use crate::agent::ppo::model::{PPOModel, PPOOutput};
 use crate::agent::PPOTrainingConfig;
-use crate::base::{get_batch, sample_indices, Agent, ElemType, Environment, Memory, MemoryIndices};
+use crate::base::{get_batch, sample_indices, ElemType, Environment, Memory, MemoryIndices};
 use crate::utils::{
     elementwise_min, get_elem, ref_to_action_tensor, ref_to_not_done_tensor, ref_to_reward_tensor,
     ref_to_state_tensor, sample_action_from_tensor, update_parameters,

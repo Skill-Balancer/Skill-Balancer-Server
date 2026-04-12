@@ -1,50 +1,40 @@
-use burn::{Tensor, tensor::Int};
-use rand::{thread_rng, Rng};
-use burn_rl::base::Action;
+use burn::tensor::TensorData;
 use burn::tensor::backend::Backend;
+use burn::{Tensor, tensor::Int};
+use burn_rl::base::Action;
 
-type ActionType = usize;
+type ActionType = i32;
 
 #[derive(Debug, Clone)]
 pub struct GameAction {
     pub actions: Vec<ActionType>,
-    pub size: usize,
 }
 
 impl GameAction {
-    fn new(amount : usize) -> GameAction {
-        GameAction { actions: vec![0; amount], size: amount}
-    }
-}
-
-impl Action for GameAction {    
-    fn to_tensor<B: Backend>(&self) -> Tensor<B, 1, Int> {
-        Tensor::<B, 1, Int>::from_ints(self.actions, &Default::default())
-    }
-}
-
-impl From<GameAction> for u32 {
-    fn from(action: GameAction) -> Self {
-        5
-    }
-}
-
-impl From<u32> for GameAction {
-    fn from(mut value: u32) -> Self {
-        if value == 0 {
-            return GameAction::new(5);
+    fn new(amount: usize) -> GameAction {
+        GameAction {
+            actions: vec![0; amount],
         }
+    }
+}
 
-        let increase = if value % 2 == 0 {
-            true
-        } else {
-            false
-        };
+impl Action for GameAction {
+    fn to_tensor<B: Backend>(&self) -> Tensor<B, 1, Int> {
+        let tensor_data = TensorData::new(self.actions.clone(), [self.actions.len()]);
+        Tensor::<B, 1, Int>::from_ints(tensor_data, &Default::default())
+    }
+}
 
-        let index = (value as f32 / 2.0).ceil(); // unfinished
+impl From<GameAction> for Vec<ActionType> {
+    fn from(action: GameAction) -> Self {
+        action.actions
+    }
+}
 
-        let game_actions = GameAction::new();
-
-        game_actions
+impl From<Vec<ActionType>> for GameAction {
+    fn from(value: Vec<ActionType>) -> Self {
+        let mut game_action = GameAction::new(value.len());
+        game_action.actions.copy_from_slice(&value);
+        game_action
     }
 }
