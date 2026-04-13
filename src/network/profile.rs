@@ -10,17 +10,18 @@ pub struct Profile {
     #[allow(unused)]
     pub description: Option<String>,
     pub state_size: usize,
-    pub action_size: usize,
     pub trainer: PPOTrainer<Backend>,
 }
 
 impl From<Model> for Profile {
     fn from(config: Model) -> Self {
         let trainer_config = PPOTrainingConfig::from(config.clone());
+        let state_size = config.state.0.len();
         Self {
             name: config.name,
             description: config.description,
-            trainer: PPOTrainer::<Backend>::new(trainer_config, config.actions.length() * 2 + 1),
+            state_size,
+            trainer: PPOTrainer::<Backend>::new(trainer_config,state_size, config.actions.length() * 2 + 1),
         }
     }
 }
