@@ -34,13 +34,13 @@ pub(crate) fn ref_to_not_done_tensor<B: Backend>(done: &bool) -> Tensor<B, 1> {
 #[allow(unused)]
 pub(crate) fn sample_action_from_tensor<A: Action, B: Backend>(output: Tensor<B, 2>) -> Option<A> {
     let prob = output.to_data().to_vec::<ElemType>().ok()?;
-    let length = prob.len();
+    let length = prob.len() / 2;
     let dist = WeightedIndex::new(prob).ok()?;
     let mut rng = thread_rng();
     let mut action_single = (dist.sample(&mut rng) as u32);
 
     if action_single == 0 {
-        return Some(vec![0 as i32; length].into());
+        return Some(vec![0; length].into());
     }
 
     let is_increase = action_single % 2 == 1;
@@ -51,12 +51,12 @@ pub(crate) fn sample_action_from_tensor<A: Action, B: Backend>(output: Tensor<B,
 
     let position = ((action_single / 2) - 1) as usize;
 
-    let mut action = vec![0 as i32; length];
+    let mut action = vec![0; length];
 
     if is_increase {
-        action[position] = 1 as i32;
+        action[position] = 1;
     } else {
-        action[position] = -1 as i32;
+        action[position] = -1;
     }
 
     Some(action.into())

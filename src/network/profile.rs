@@ -18,7 +18,7 @@ impl From<Model> for Profile {
         Self {
             name: config.name,
             description: config.description,
-            trainer: PPOTrainer::<Backend>::new(trainer_config, config.actions.length()),
+            trainer: PPOTrainer::<Backend>::new(trainer_config, config.actions.length() * 2 + 1),
         }
     }
 }
