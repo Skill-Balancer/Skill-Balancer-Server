@@ -24,9 +24,9 @@ async fn create_transition(
     State(state): State<AppState>,
     Json(payload): Json<StepParam>,
 ) -> impl IntoResponse {
-      let mut profile = state.profile.lock().await;
-    
-      let profile = match profile.as_mut() {
+    let mut profile = state.profile.lock().await;
+
+    let profile = match profile.as_mut() {
         Some(val) => val,
         None => {
             return (
@@ -48,13 +48,12 @@ async fn create_transition(
         return (
             StatusCode::BAD_REQUEST,
             Json(json!({
-                        "error": "invalid state size",
-                        "expected": profile.state_size,
-                        "received": game.state.len()
-                    })),
+                "error": "invalid state size",
+                "expected": profile.state_size,
+                "received": game.state.len()
+            })),
         );
     }
-            
 
     let action = match profile.trainer.step(&game) {
         Ok(val) => val,

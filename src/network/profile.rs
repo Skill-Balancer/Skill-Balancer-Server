@@ -24,7 +24,12 @@ impl From<Model> for Profile {
             description: config.description,
             state_size,
             train_every,
-            trainer: PPOTrainer::<Backend>::new(trainer_config,state_size, config.actions.length() * 2 + 1, train_every),
+            trainer: PPOTrainer::<Backend>::new(
+                trainer_config,
+                state_size,
+                config.actions.length() * 2 + 1,
+                train_every,
+            ),
         }
     }
 }

@@ -76,7 +76,12 @@ pub struct PPOTrainer<B: AutodiffBackend> {
 }
 
 impl<B: AutodiffBackend> PPOTrainer<B> {
-    pub fn new(config: PPOTrainingConfig,input_size: usize, actions_amount: usize, train_every: usize) -> Self {
+    pub fn new(
+        config: PPOTrainingConfig,
+        input_size: usize,
+        actions_amount: usize,
+        train_every: usize,
+    ) -> Self {
         Self {
             model: Net::new(input_size, DENSE_SIZE, actions_amount),
             optimizer: AdamWConfig::new()
