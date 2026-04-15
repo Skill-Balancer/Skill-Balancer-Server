@@ -61,7 +61,6 @@ impl<B: Backend> Model<B, Tensor<B, 2>, PPOOutput<B>, Tensor<B, 2>> for Net<B> {
 }
 const INPUT_SIZE: usize = 4; // TODO: Make configuable
 const DENSE_SIZE: usize = 128;
-const OUTPUT_SIZE: usize = 5; // TODO: Make configuable
 
 const MEMORY_SIZE: usize = 512;
 
@@ -78,9 +77,9 @@ pub struct PPOTrainer<B: AutodiffBackend> {
 }
 
 impl<B: AutodiffBackend> PPOTrainer<B> {
-    pub fn new(config: PPOTrainingConfig) -> Self {
+    pub fn new(config: PPOTrainingConfig, actions_amount: usize) -> Self {
         Self {
-            model: Net::new(INPUT_SIZE, DENSE_SIZE, OUTPUT_SIZE),
+            model: Net::new(INPUT_SIZE, DENSE_SIZE, actions_amount),
             optimizer: AdamWConfig::new()
                 .with_grad_clipping(config.clip_grad.clone())
                 .init(),
@@ -92,9 +91,9 @@ impl<B: AutodiffBackend> PPOTrainer<B> {
         }
     }
 
-    pub fn step(&mut self, env: &GameEnv) -> isize {
+    pub fn step(&mut self, env: &GameEnv) -> Result<&GameAction, String> {
         if let Some(last_state) = self.last_state
-            && let Some(action) = self.action
+            && let Some(action) = &self.action
         {
             let current_state = &env.state;
             let reward = env.reward;
@@ -123,12 +122,9 @@ impl<B: AutodiffBackend> PPOTrainer<B> {
         }
         self.last_state = Some(env.state.clone());
         self.action = PPO::<GameEnv, B, Net<B>>::react_with_model(&env.state, &self.model);
-        match self.action {
-            Some(val) => val.into(),
-            None => {
-                eprintln!("PPO model failed to select an action. Defaulting to 0.");
-                0
-            }
+        match &self.action {
+            Some(val) => Ok(val),
+            None => Err("something went wrong bucko".to_string()),
         }
     }
 

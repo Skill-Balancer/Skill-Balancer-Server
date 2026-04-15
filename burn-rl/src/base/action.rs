@@ -1,14 +1,9 @@
-use rand::{thread_rng, Rng};
 use std::fmt::Debug;
 
-pub trait Action: Debug + Copy + Clone + From<u32> + Into<u32> {
-    fn random() -> Self {
-        (thread_rng().gen_range(0..Self::size()) as u32).into()
-    }
+use burn::tensor::backend::Backend;
+use burn::tensor::Int;
+use burn::Tensor;
 
-    fn enumerate() -> Vec<Self>;
-
-    fn size() -> usize {
-        Self::enumerate().len()
-    }
+pub trait Action: Debug + Clone + From<Vec<i32>> + Into<Vec<i32>> {
+    fn to_tensor<B: Backend>(&self) -> Tensor<B, 1, Int>;
 }

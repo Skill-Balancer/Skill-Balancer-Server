@@ -1,9 +1,9 @@
 use crate::agent::ppo::model::{PPOModel, PPOOutput};
 use crate::agent::PPOTrainingConfig;
-use crate::base::{get_batch, sample_indices, Agent, ElemType, Environment, Memory, MemoryIndices};
+use crate::base::{get_batch, sample_indices, ElemType, Environment, Memory, MemoryIndices};
 use crate::utils::{
     elementwise_min, get_elem, ref_to_action_tensor, ref_to_not_done_tensor, ref_to_reward_tensor,
-    ref_to_state_tensor, sample_action_from_tensor, to_state_tensor, update_parameters,
+    ref_to_state_tensor, sample_action_from_tensor, update_parameters,
 };
 use burn::module::AutodiffModule;
 use burn::nn::loss::{MseLoss, Reduction};
@@ -13,20 +13,11 @@ use burn::tensor::Tensor;
 use std::marker::PhantomData;
 
 pub struct PPO<E: Environment, B: Backend, M: PPOModel<B>> {
+    #[allow(unused)]
     model: Option<M>,
     state: PhantomData<E::StateType>,
     action: PhantomData<E::ActionType>,
     backend: PhantomData<B>,
-}
-
-impl<E: Environment, B: Backend, M: PPOModel<B>> Agent<E> for PPO<E, B, M> {
-    fn react(&self, state: &E::StateType) -> Option<E::ActionType> {
-        sample_action_from_tensor::<E::ActionType, B>(
-            self.model
-                .as_ref()?
-                .infer(to_state_tensor(*state).unsqueeze()),
-        )
-    }
 }
 
 impl<E: Environment, B: Backend, M: PPOModel<B>> PPO<E, B, M> {
@@ -41,7 +32,7 @@ impl<E: Environment, B: Backend, M: PPOModel<B>> PPO<E, B, M> {
 
     pub fn react_with_model(state: &E::StateType, model: &M) -> Option<E::ActionType> {
         sample_action_from_tensor::<E::ActionType, _>(
-            model.infer(to_state_tensor(*state).unsqueeze()),
+            model.infer(ref_to_state_tensor(state).unsqueeze()),
         )
     }
 }

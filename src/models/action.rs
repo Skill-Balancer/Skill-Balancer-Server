@@ -1,59 +1,40 @@
+use burn::tensor::TensorData;
+use burn::tensor::backend::Backend;
+use burn::{Tensor, tensor::Int};
 use burn_rl::base::Action;
 
-#[derive(Debug, Copy, Clone)]
-pub enum GameAction {
-    NoChange,
-    PlayerOneAttInc,
-    PlayerOneAttDec,
-    PlayerTwoAttInc,
-    PlayerTwoAttDec,
+type ActionType = i32;
+
+#[derive(Debug, Clone)]
+pub struct GameAction {
+    pub actions: Vec<ActionType>,
 }
 
-impl From<u32> for GameAction {
-    fn from(value: u32) -> Self {
-        match value {
-            0 => Self::NoChange,
-            1 => Self::PlayerOneAttInc,
-            2 => Self::PlayerOneAttDec,
-            3 => Self::PlayerTwoAttInc,
-            4 => Self::PlayerTwoAttDec,
-            _ => panic!("This action does not exist!"),
-        }
-    }
-}
-
-impl Into<isize> for GameAction {
-    fn into(self) -> isize {
-        match self {
-            GameAction::NoChange => 0,
-            GameAction::PlayerOneAttInc => 1,
-            GameAction::PlayerOneAttDec => -1,
-            GameAction::PlayerTwoAttInc => 2,
-            GameAction::PlayerTwoAttDec => -2,
-        }
-    }
-}
-
-impl From<GameAction> for u32 {
-    fn from(action: GameAction) -> Self {
-        match action {
-            GameAction::NoChange => 0,
-            GameAction::PlayerOneAttInc => 1,
-            GameAction::PlayerOneAttDec => 2,
-            GameAction::PlayerTwoAttInc => 3,
-            GameAction::PlayerTwoAttDec => 4,
+impl GameAction {
+    fn new(amount: usize) -> GameAction {
+        GameAction {
+            actions: vec![0; amount],
         }
     }
 }
 
 impl Action for GameAction {
-    fn enumerate() -> Vec<Self> {
-        vec![
-            Self::NoChange,
-            Self::PlayerOneAttInc,
-            Self::PlayerOneAttDec,
-            Self::PlayerTwoAttDec,
-            Self::PlayerTwoAttInc,
-        ]
+    fn to_tensor<B: Backend>(&self) -> Tensor<B, 1, Int> {
+        let tensor_data = TensorData::new(self.actions.clone(), [self.actions.len()]);
+        Tensor::<B, 1, Int>::from_ints(tensor_data, &Default::default())
+    }
+}
+
+impl From<GameAction> for Vec<ActionType> {
+    fn from(action: GameAction) -> Self {
+        action.actions
+    }
+}
+
+impl From<Vec<ActionType>> for GameAction {
+    fn from(value: Vec<ActionType>) -> Self {
+        let mut game_action = GameAction::new(value.len());
+        game_action.actions.copy_from_slice(&value);
+        game_action
     }
 }

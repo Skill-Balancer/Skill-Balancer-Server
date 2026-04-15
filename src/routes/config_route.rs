@@ -1,5 +1,5 @@
 use crate::AppState;
-use crate::entities::config::{self, StringVec};
+use crate::entities::config::{self, ActiveModel, StringVec};
 use crate::network::profile::Profile;
 use crate::storage::model::delete_config_files;
 use axum::extract::State;
@@ -194,7 +194,7 @@ fn cmp_configs(db_conf: &config::Model, request: &config::Model, allow_rename: b
         && db_conf.train_every == request.train_every
 }
 
-fn get_active_model_from_config(config: &ConfigParams) -> crate::entities::config::ActiveModel {
+fn get_active_model_from_config(config: &ConfigParams) -> ActiveModel {
     let defaults = PPOTrainingConfig::default();
 
     crate::entities::config::ActiveModel {

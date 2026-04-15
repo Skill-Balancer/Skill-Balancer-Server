@@ -13,6 +13,7 @@ dependencies = [
  "burn-rl",
  "burn-store",
  "dotenv",
+ "rand 0.8.5",
  "sea-orm",
  "serde",
  "serde_json",
