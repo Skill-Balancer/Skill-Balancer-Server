@@ -17,7 +17,7 @@ pub struct Profile {
 impl From<Model> for Profile {
     fn from(config: Model) -> Self {
         let trainer_config = PPOTrainingConfig::from(config.clone());
-        let state_size = config.state.0.len();
+        let state_size = config.state.length();
         let train_every = config.train_every as usize;
         Self {
             name: config.name,

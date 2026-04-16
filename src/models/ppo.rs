@@ -59,7 +59,6 @@ impl<B: Backend> Model<B, Tensor<B, 2>, PPOOutput<B>, Tensor<B, 2>> for Net<B> {
         softmax(self.linear_actor.forward(layer_0_output.clone()), 1)
     }
 }
-const INPUT_SIZE: usize = 4; // TODO: Make configuable
 const DENSE_SIZE: usize = 128;
 
 const MEMORY_SIZE: usize = 512;
@@ -88,7 +87,7 @@ impl<B: AutodiffBackend> PPOTrainer<B> {
                 .with_grad_clipping(config.clip_grad.clone())
                 .init(),
             memory: Memory::default(),
-            config: config,
+            config,
             steps: 0,
             last_state: None,
             action: None,
