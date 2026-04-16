@@ -3,14 +3,6 @@ use burn_rl::base::{ElemType, Snapshot, environment::Environment};
 use crate::models::{action::GameAction, state::GameState};
 
 #[derive(Debug)]
-pub struct _GameValues {
-    // TODO: make used at some point (it is not necessary now, but it will be)
-    pub data: Vec<ElemType>,
-    pub reward: ElemType,
-    //why is there a reward here?
-}
-
-#[derive(Debug)]
 pub struct GameEnv {
     pub state: GameState,
     pub reward: ElemType,

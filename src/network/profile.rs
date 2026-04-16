@@ -10,7 +10,6 @@ pub struct Profile {
     #[allow(unused)]
     pub description: Option<String>,
     pub state_size: usize,
-    pub train_every: usize,
     pub trainer: PPOTrainer<Backend>,
 }
 
@@ -23,7 +22,6 @@ impl From<Model> for Profile {
             name: config.name,
             description: config.description,
             state_size,
-            train_every,
             trainer: PPOTrainer::<Backend>::new(
                 trainer_config,
                 state_size,
