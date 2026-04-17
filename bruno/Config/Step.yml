@@ -16,7 +16,8 @@ http:
       {
         "name": "ikemen",
         "game_state": [0.0, 0.0],
-        "prev_reward": 0.0
+        "prev_reward": 0.0,
+        "done": false
       }
   auth: inherit
 
