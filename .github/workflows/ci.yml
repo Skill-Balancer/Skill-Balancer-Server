@@ -20,8 +20,6 @@ jobs:
         with:
           install: true
           cache: true
-      - name: Linting check
-        run: cargo check
       - name: Install fmt
         run: rustup component add rustfmt
       - name: check formatting
