@@ -12,7 +12,7 @@ use serde_json::json;
 #[derive(Debug, Serialize, Deserialize)]
 pub struct StepParam {
     pub name: String,
-    pub game_state: [ElemType; 4],
+    pub game_state: Vec<ElemType>,
     pub prev_reward: ElemType,
 }
 
@@ -24,11 +24,6 @@ async fn create_transition(
     State(state): State<AppState>,
     Json(payload): Json<StepParam>,
 ) -> impl IntoResponse {
-    let game = GameEnv {
-        state: GameState::from(payload.game_state),
-        reward: payload.prev_reward,
-    };
-
     let mut profile = state.profile.lock().await;
 
     let profile = match profile.as_mut() {
@@ -42,6 +37,23 @@ async fn create_transition(
             );
         }
     };
+
+    let game = GameEnv {
+        state: GameState::from(payload.game_state),
+        reward: payload.prev_reward,
+        state_size: profile.state_size,
+    };
+
+    if game.state.len() != profile.state_size {
+        return (
+            StatusCode::BAD_REQUEST,
+            Json(json!({
+                "error": "invalid state size",
+                "expected": profile.state_size,
+                "received": game.state.len()
+            })),
+        );
+    }
 
     let action = match profile.trainer.step(&game) {
         Ok(val) => val,

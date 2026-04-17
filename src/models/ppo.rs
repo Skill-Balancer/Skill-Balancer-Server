@@ -59,12 +59,9 @@ impl<B: Backend> Model<B, Tensor<B, 2>, PPOOutput<B>, Tensor<B, 2>> for Net<B> {
         softmax(self.linear_actor.forward(layer_0_output.clone()), 1)
     }
 }
-const INPUT_SIZE: usize = 4; // TODO: Make configuable
 const DENSE_SIZE: usize = 128;
 
 const MEMORY_SIZE: usize = 512;
-
-pub const TRAIN_EVERY: usize = MEMORY_SIZE;
 
 pub struct PPOTrainer<B: AutodiffBackend> {
     pub model: Net<B>,
@@ -74,25 +71,32 @@ pub struct PPOTrainer<B: AutodiffBackend> {
     pub steps: usize,
     last_state: Option<GameState>,
     action: Option<GameAction>,
+    pub train_every: usize,
 }
 
 impl<B: AutodiffBackend> PPOTrainer<B> {
-    pub fn new(config: PPOTrainingConfig, actions_amount: usize) -> Self {
+    pub fn new(
+        config: PPOTrainingConfig,
+        input_size: usize,
+        actions_amount: usize,
+        train_every: usize,
+    ) -> Self {
         Self {
-            model: Net::new(INPUT_SIZE, DENSE_SIZE, actions_amount),
+            model: Net::new(input_size, DENSE_SIZE, actions_amount),
             optimizer: AdamWConfig::new()
                 .with_grad_clipping(config.clip_grad.clone())
                 .init(),
             memory: Memory::default(),
-            config: config,
+            config,
             steps: 0,
             last_state: None,
             action: None,
+            train_every,
         }
     }
 
     pub fn step(&mut self, env: &GameEnv) -> Result<&GameAction, String> {
-        if let Some(last_state) = self.last_state
+        if let Some(last_state) = self.last_state.clone()
             && let Some(action) = &self.action
         {
             let current_state = &env.state;
@@ -114,7 +118,7 @@ impl<B: AutodiffBackend> PPOTrainer<B> {
                 );
             }
 
-            if self.steps.is_multiple_of(TRAIN_EVERY) {
+            if self.train_every <= MEMORY_SIZE && self.steps.is_multiple_of(self.train_every) {
                 println!("Training PPO model at step {}...", self.steps);
                 self.train();
                 println!("Finished training PPO model at step {}", self.steps);
