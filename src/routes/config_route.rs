@@ -14,6 +14,7 @@ use serde::{Deserialize, Serialize};
 use serde_json::json;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct Hyperparams {
     pub gamma: Option<ElemType>,
     pub lambda: Option<ElemType>,
