@@ -14,6 +14,7 @@ dependencies = [
  "burn-store",
  "dotenv",
  "rand 0.8.5",
+ "ringbuffer",
  "sea-orm",
  "serde",
  "serde_json",
