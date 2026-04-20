@@ -1,9 +1,9 @@
-use crate::storage::db::DB;
+use crate::{models::metrics::Metrics, storage::db::DB};
 use axum::Router;
 use dotenv::dotenv;
 use network::profile::Profile;
 use std::sync::Arc;
-use tokio::sync::Mutex;
+use tokio::sync::{Mutex, broadcast::Sender};
 use tower_http::services::ServeDir;
 
 //importing routes and files.
@@ -24,6 +24,7 @@ mod utils;
 struct AppState {
     profile: Arc<Mutex<Option<Profile>>>,
     db: DB,
+    metrics_tx: Sender<Metrics>
 }
 
 #[tokio::main]
@@ -32,9 +33,11 @@ async fn main() {
     let db = DB::new().await.expect("Failed to connect to database");
     db.sync_schema().await.unwrap(); // this line does not work, and i dont know why it should crash on failed sync
 
+    let (metrics_tx, _metrics_rx) = tokio::sync::broadcast::channel(100);
     let state = AppState {
         profile: Arc::new(Mutex::new(None)),
         db: db.clone(),
+        metrics_tx
     };
 
     let app = Router::new()
@@ -48,6 +51,7 @@ async fn main() {
         .merge(routes::model::export::export_model_route())
         .merge(routes::model::list_checkpoints::list_checkpoints_route())
         .merge(routes::model::list_exports::list_exports_route())
+        .merge(routes::sse::metrics_route())
         .with_state(state);
 
     println!("Server running on http://localhost:3000");

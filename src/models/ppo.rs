@@ -14,6 +14,7 @@ use burn_rl::{
     base::{Memory, Model},
 };
 use ringbuffer::RingBuffer;
+use tokio::sync::broadcast::Sender;
 
 use crate::{
     env::{print_steps, print_training},
@@ -96,7 +97,12 @@ impl<B: AutodiffBackend> PPOTrainer<B> {
         }
     }
 
-    pub fn step(&mut self, env: &GameEnv, done: bool) -> Result<&GameAction, String> {
+    pub fn step(
+        &mut self,
+        env: &GameEnv,
+        done: bool,
+        metrics_tx: Sender<Metrics>,
+    ) -> Result<&GameAction, String> {
         if let Some(last_state) = self.last_state.clone()
             && let Some(action) = &self.action
         {
@@ -135,6 +141,7 @@ impl<B: AutodiffBackend> PPOTrainer<B> {
                     };
                     if print_training() {
                         metrics.print_pretty();
+                        let _ = metrics_tx.send(metrics.clone());
                     }
                 }
             }

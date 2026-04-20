@@ -56,7 +56,7 @@ async fn create_transition(
         );
     }
 
-    let action = match profile.trainer.step(&game, payload.done) {
+    let action = match profile.trainer.step(&game, payload.done, state.metrics_tx.clone()) {
         Ok(val) => val,
         Err(val) => {
             return (
