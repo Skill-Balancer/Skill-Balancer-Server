@@ -3,7 +3,7 @@ use askama::Template;
 use axum::{Router, response::Html, routing::get};
 
 #[derive(Template)]
-#[template(path = "root.html")]
+#[template(path = "dashboard.html")]
 pub struct HelloTemplate<'a> {
     pub _name: &'a str,
 }
