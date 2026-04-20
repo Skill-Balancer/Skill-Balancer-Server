@@ -1,2 +1,352 @@
-<h1>Dashboard</h1>
-<button onclick="alert('Oh dang. We haven\'t implemented that yet')">Save Model</button>
+<!doctype html>
+<html lang="en" data-theme="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Training Dashboard</title>
+
+    <!-- Tailwind + DaisyUI -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/daisyui@4.12.10/dist/full.min.css"
+      rel="stylesheet"
+    />
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Chart.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+
+    <style>
+      body {
+        background-color: oklch(var(--b1));
+        font-family: "ui-monospace", "SFMono-Regular", "Menlo", monospace;
+      }
+
+      .chart-container {
+        position: relative;
+      }
+
+      /* Pulse animation for the live indicator */
+      @keyframes pulse-dot {
+        0%,
+        100% {
+          opacity: 1;
+          transform: scale(1);
+        }
+        50% {
+          opacity: 0.4;
+          transform: scale(0.85);
+        }
+      }
+      .live-dot {
+        animation: pulse-dot 1.4s ease-in-out infinite;
+      }
+
+      /* Stat value fade-in on update */
+      @keyframes flash {
+        0% {
+          color: oklch(var(--su));
+        }
+        100% {
+          color: inherit;
+        }
+      }
+      .flash {
+        animation: flash 0.4s ease-out;
+      }
+    </style>
+
+    <script>
+      tailwind.config = {
+        darkMode: ["selector", '[data-theme="dark"]'],
+      };
+    </script>
+  </head>
+
+  <body class="min-h-screen p-6 md:p-10">
+    <!-- Header -->
+    <div class="flex items-center justify-between mb-8">
+      <div>
+        <h1 class="text-2xl font-bold tracking-tight text-base-content">
+          Training Dashboard
+        </h1>
+        <p
+          class="text-xs text-base-content/40 mt-0.5 uppercase tracking-widest"
+        >
+          PPO · Live metrics
+        </p>
+      </div>
+      <div class="flex items-center gap-2">
+        <span
+          class="live-dot inline-block w-2 h-2 rounded-full bg-success"
+        ></span>
+        <span class="text-xs text-base-content/50 uppercase tracking-widest"
+          >Live</span
+        >
+      </div>
+    </div>
+
+    <!-- Stat Cards -->
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+      <div class="card bg-base-200 border border-base-300 shadow-sm">
+        <div class="card-body p-4">
+          <p
+            class="text-xs uppercase tracking-widest text-base-content/40 mb-1"
+          >
+            Step
+          </p>
+          <p
+            id="card-step"
+            class="text-2xl font-bold text-base-content tabular-nums"
+          >
+            —
+          </p>
+        </div>
+      </div>
+      <div class="card bg-base-200 border border-base-300 shadow-sm">
+        <div class="card-body p-4">
+          <p
+            class="text-xs uppercase tracking-widest text-base-content/40 mb-1"
+          >
+            Mean Reward
+          </p>
+          <p
+            id="card-reward"
+            class="text-2xl font-bold text-success tabular-nums"
+          >
+            —
+          </p>
+        </div>
+      </div>
+      <div class="card bg-base-200 border border-base-300 shadow-sm">
+        <div class="card-body p-4">
+          <p
+            class="text-xs uppercase tracking-widest text-base-content/40 mb-1"
+          >
+            Entropy
+          </p>
+          <p
+            id="card-entropy"
+            class="text-2xl font-bold text-secondary tabular-nums"
+          >
+            —
+          </p>
+        </div>
+      </div>
+      <div class="card bg-base-200 border border-base-300 shadow-sm">
+        <div class="card-body p-4">
+          <p
+            class="text-xs uppercase tracking-widest text-base-content/40 mb-1"
+          >
+            Clip Fraction
+          </p>
+          <p
+            id="card-clip"
+            class="text-2xl font-bold text-warning tabular-nums"
+          >
+            —
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Charts -->
+    <div class="grid grid-cols-1 gap-4 mb-8">
+      <!-- Reward / Loss chart -->
+      <div class="card bg-base-200 border border-base-300 shadow-sm">
+        <div class="card-body p-5">
+          <h2
+            class="text-xs uppercase tracking-widest text-base-content/40 mb-4"
+          >
+            Reward &amp; Loss
+          </h2>
+          <div class="chart-container" style="height: 200px">
+            <canvas id="chartReward"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- Entropy / Clip chart -->
+      <div class="card bg-base-200 border border-base-300 shadow-sm">
+        <div class="card-body p-5">
+          <h2
+            class="text-xs uppercase tracking-widest text-base-content/40 mb-4"
+          >
+            Entropy &amp; Clip Fraction
+          </h2>
+          <div class="chart-container" style="height: 160px">
+            <canvas id="chartEntropy"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="flex gap-3">
+      <button
+        class="btn btn-primary btn-sm"
+        onclick="alert('Oh dang. We haven\'t implemented that yet')"
+      >
+        Save Model
+      </button>
+      <button class="btn btn-ghost btn-sm" onclick="clearData()">Clear</button>
+    </div>
+
+    <script>
+      // ─── Chart defaults for dark mode ────────────────────────────────────────
+      Chart.defaults.color = "rgba(255,255,255,0.35)";
+      Chart.defaults.borderColor = "rgba(255,255,255,0.07)";
+
+      const MAX_POINTS = 60;
+      const steps = [],
+        rewards = [],
+        policyLosses = [],
+        valueLosses = [],
+        entropies = [],
+        clips = [];
+
+      const sharedOpts = {
+        responsive: true,
+        maintainAspectRatio: false,
+        animation: false,
+        plugins: {
+          legend: {
+            display: true,
+            labels: {
+              boxWidth: 12,
+              boxHeight: 2,
+              font: { size: 11, family: "ui-monospace, monospace" },
+              color: "rgba(255,255,255,0.5)",
+            },
+          },
+        },
+        scales: {
+          x: {
+            ticks: { maxTicksLimit: 8, font: { size: 10 } },
+            grid: { color: "rgba(255,255,255,0.05)" },
+          },
+          y: {
+            ticks: { font: { size: 10 } },
+            grid: { color: "rgba(255,255,255,0.05)" },
+          },
+        },
+      };
+
+      const chartReward = new Chart(document.getElementById("chartReward"), {
+        type: "line",
+        data: {
+          labels: steps,
+          datasets: [
+            {
+              label: "Mean reward",
+              data: rewards,
+              borderColor: "#34d399",
+              backgroundColor: "rgba(52,211,153,0.07)",
+              fill: true,
+              tension: 0.3,
+              pointRadius: 0,
+              borderWidth: 2,
+            },
+            {
+              label: "Policy loss",
+              data: policyLosses,
+              borderColor: "#f87171",
+              tension: 0.3,
+              pointRadius: 0,
+              borderWidth: 1.5,
+            },
+            {
+              label: "Value loss",
+              data: valueLosses,
+              borderColor: "#60a5fa",
+              tension: 0.3,
+              pointRadius: 0,
+              borderWidth: 1.5,
+            },
+          ],
+        },
+        options: sharedOpts,
+      });
+
+      const chartEntropy = new Chart(document.getElementById("chartEntropy"), {
+        type: "line",
+        data: {
+          labels: steps,
+          datasets: [
+            {
+              label: "Entropy",
+              data: entropies,
+              borderColor: "#a78bfa",
+              tension: 0.3,
+              pointRadius: 0,
+              borderWidth: 2,
+            },
+            {
+              label: "Clip fraction",
+              data: clips,
+              borderColor: "#fbbf24",
+              tension: 0.3,
+              pointRadius: 0,
+              borderWidth: 1.5,
+              borderDash: [4, 3],
+            },
+          ],
+        },
+        options: sharedOpts,
+      });
+
+      function push(arr, val) {
+        arr.push(val);
+        if (arr.length > MAX_POINTS) arr.shift();
+      }
+
+      function flash(id) {
+        const el = document.getElementById(id);
+        el.classList.remove("flash");
+        void el.offsetWidth; // reflow to restart animation
+        el.classList.add("flash");
+      }
+
+      function clearData() {
+        [steps, rewards, policyLosses, valueLosses, entropies, clips].forEach(
+          (a) => (a.length = 0),
+        );
+        chartReward.update("none");
+        chartEntropy.update("none");
+        ["card-step", "card-reward", "card-entropy", "card-clip"].forEach(
+          (id) => {
+            document.getElementById(id).textContent = "—";
+          },
+        );
+      }
+
+      const source = new EventSource("/metrics");
+      source.addEventListener("metrics", (e) => {
+        const m = JSON.parse(e.data);
+
+        push(steps, m.step);
+        push(rewards, m.mean_reward);
+        push(policyLosses, m.policy_loss);
+        push(valueLosses, m.value_loss);
+        push(entropies, m.entropy);
+        push(clips, m.clip_fraction);
+
+        chartReward.update("none");
+        chartEntropy.update("none");
+
+        document.getElementById("card-step").textContent = m.step;
+        document.getElementById("card-reward").textContent =
+          m.mean_reward.toFixed(4);
+        document.getElementById("card-entropy").textContent =
+          m.entropy.toFixed(4);
+        document.getElementById("card-clip").textContent =
+          m.clip_fraction.toFixed(4);
+
+        flash("card-reward");
+        flash("card-entropy");
+        flash("card-clip");
+      });
+
+      source.onerror = () => console.warn("SSE connection lost, retrying...");
+    </script>
+  </body>
+</html>
