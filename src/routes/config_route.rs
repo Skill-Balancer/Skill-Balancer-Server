@@ -14,6 +14,19 @@ use serde::{Deserialize, Serialize};
 use serde_json::json;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct Hyperparams {
+    pub gamma: Option<ElemType>,
+    pub lambda: Option<ElemType>,
+    pub epsilon_clip: Option<ElemType>,
+    pub critic_weight: Option<ElemType>,
+    pub entropy_weight: Option<ElemType>,
+    pub learning_rate: Option<ElemType>,
+    pub epochs: Option<u32>,
+    pub batch_size: Option<u32>,
+    pub clip_grad: Option<f32>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ConfigParams {
     name: String,
     description: Option<String>,
@@ -22,19 +35,9 @@ pub struct ConfigParams {
     actions: Vec<String>,
     train_every: Option<u32>,
 
-    // PPO config (completely optional and will be handled if none)
-    gamma: Option<ElemType>,
-    lambda: Option<ElemType>,
-    epsilon_clip: Option<ElemType>,
-    critic_weight: Option<ElemType>,
-    entropy_weight: Option<ElemType>,
-    learning_rate: Option<ElemType>,
-    epochs: Option<u32>,
-    batch_size: Option<u32>,
-    clip_grad: Option<f32>,
-
     allow_overwrite: Option<bool>,
     allow_rename: Option<bool>,
+    hyperparameters: Option<Hyperparams>,
 }
 
 pub fn config_route() -> Router<AppState> {
@@ -196,6 +199,17 @@ fn cmp_configs(db_conf: &config::Model, request: &config::Model, allow_rename: b
 
 fn get_active_model_from_config(config: &ConfigParams) -> ActiveModel {
     let defaults = PPOTrainingConfig::default();
+    let hyperparams = config.hyperparameters.clone().unwrap_or(Hyperparams {
+        gamma: Some(defaults.gamma),
+        lambda: Some(defaults.lambda),
+        epsilon_clip: Some(defaults.epsilon_clip),
+        critic_weight: Some(defaults.critic_weight),
+        entropy_weight: Some(defaults.entropy_weight),
+        learning_rate: Some(defaults.learning_rate),
+        epochs: Some(defaults.epochs as u32),
+        batch_size: Some(defaults.batch_size as u32),
+        clip_grad: Some(0.5),
+    });
 
     crate::entities::config::ActiveModel {
         name: Set(config.name.clone()),
@@ -203,15 +217,17 @@ fn get_active_model_from_config(config: &ConfigParams) -> ActiveModel {
         state: Set(StringVec(config.state.clone())),
         actions: Set(StringVec(config.actions.clone())),
         train_every: Set(config.train_every.unwrap_or(300)),
-        gamma: Set(config.gamma.unwrap_or(defaults.gamma)),
-        lambda: Set(config.lambda.unwrap_or(defaults.lambda)),
-        epsilon_clip: Set(config.epsilon_clip.unwrap_or(defaults.epsilon_clip)),
-        critic_weight: Set(config.critic_weight.unwrap_or(defaults.critic_weight)),
-        entropy_weight: Set(config.entropy_weight.unwrap_or(defaults.entropy_weight)),
-        learning_rate: Set(config.learning_rate.unwrap_or(defaults.learning_rate)),
-        epochs: Set(config.epochs.unwrap_or(defaults.epochs as u32)),
-        batch_size: Set(config.batch_size.unwrap_or(defaults.batch_size as u32)),
-        clip_grad: Set(config.clip_grad.unwrap_or(0.5)),
+        gamma: Set(hyperparams.gamma.unwrap_or(defaults.gamma)),
+        lambda: Set(hyperparams.lambda.unwrap_or(defaults.lambda)),
+        epsilon_clip: Set(hyperparams.epsilon_clip.unwrap_or(defaults.epsilon_clip)),
+        critic_weight: Set(hyperparams.critic_weight.unwrap_or(defaults.critic_weight)),
+        entropy_weight: Set(hyperparams
+            .entropy_weight
+            .unwrap_or(defaults.entropy_weight)),
+        learning_rate: Set(hyperparams.learning_rate.unwrap_or(defaults.learning_rate)),
+        epochs: Set(hyperparams.epochs.unwrap_or(defaults.epochs as u32)),
+        batch_size: Set(hyperparams.batch_size.unwrap_or(defaults.batch_size as u32)),
+        clip_grad: Set(hyperparams.clip_grad.unwrap_or(0.5)),
     }
 }
 
