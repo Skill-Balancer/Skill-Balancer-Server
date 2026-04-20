@@ -14,6 +14,7 @@ pub struct StepParam {
     pub name: String,
     pub game_state: Vec<ElemType>,
     pub prev_reward: ElemType,
+    pub done: bool,
 }
 
 pub fn step_route() -> Router<AppState> {
@@ -55,7 +56,7 @@ async fn create_transition(
         );
     }
 
-    let action = match profile.trainer.step(&game) {
+    let action = match profile.trainer.step(&game, payload.done) {
         Ok(val) => val,
         Err(val) => {
             return (

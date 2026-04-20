@@ -95,7 +95,7 @@ impl<B: AutodiffBackend> PPOTrainer<B> {
         }
     }
 
-    pub fn step(&mut self, env: &GameEnv) -> Result<&GameAction, String> {
+    pub fn step(&mut self, env: &GameEnv, done: bool) -> Result<&GameAction, String> {
         if let Some(last_state) = self.last_state.clone()
             && let Some(action) = &self.action
         {
@@ -106,7 +106,7 @@ impl<B: AutodiffBackend> PPOTrainer<B> {
                 current_state.clone(),
                 action.clone(),
                 reward,
-                false,
+                done,
             );
             self.steps += 1;
             if print_steps() {
