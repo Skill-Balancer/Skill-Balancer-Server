@@ -12,6 +12,7 @@ dependencies = [
  "burn",
  "burn-rl",
  "burn-store",
+ "colored",
  "dotenv",
  "rand 0.8.5",
  "ringbuffer",

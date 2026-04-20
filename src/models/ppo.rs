@@ -134,7 +134,7 @@ impl<B: AutodiffBackend> PPOTrainer<B> {
                         clip_fraction: m.clip_fraction,
                     };
                     if print_training() {
-                        println!("Metrics at step {}: {:?}", self.steps, metrics);
+                        metrics.print_pretty();
                     }
                 }
             }

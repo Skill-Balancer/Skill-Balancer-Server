@@ -35,3 +35,4 @@ sea-orm = { version = "2.0.0-rc", features = [
     "entity-registry",
 ] }
 rand = "0.8.5"
+colored = "3.1.1"
