@@ -259,20 +259,24 @@ fn strict_float_validation<'de, D>(deserializer: D) -> Result<Option<f32>, D::Er
 where
     D: Deserializer<'de>,
 {
+    // Serde deserialization for floats like f32 is not strict enough so we do it manually
     let v = Option::<Value>::deserialize(deserializer)?;
     match v {
         None => Ok(None),
         Some(Value::Number(n)) => {
             if n.is_i64() {
                 return Err(de::Error::custom(
-                    "integer not allowed, must be float like 1.0",
+                    "integer not allowed, must be float",
                 ));
             }
-            
-            let f = n
-                .as_f64()
-                .ok_or_else(|| de::Error::custom("invalid number"))?;
 
+            // Tries to convert to float returns if failure
+            let f = match n.as_f64() {
+                Some(f) => f,
+                None => return Err(de::Error::custom("invalid number")),
+            };
+
+            // Returns float
             Ok(Some(f as f32))
         }
 
