@@ -141,7 +141,10 @@ impl<B: AutodiffBackend> PPOTrainer<B> {
                     };
                     if print_training() {
                         metrics.print_pretty();
-                        let _ = metrics_tx.send(metrics.clone());
+                        metrics_tx.send(metrics.clone()).unwrap_or_else(|e| {
+                            eprintln!("Failed to send metrics: {}", e);
+                            0
+                        });
                     }
                 }
             }
