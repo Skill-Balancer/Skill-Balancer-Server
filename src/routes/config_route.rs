@@ -16,6 +16,7 @@ use serde_json::json;
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct Hyperparams {
+    #[serde(deserialize_with = "strict_float_validation")]
     pub gamma: Option<ElemType>,
     pub lambda: Option<ElemType>,
     pub epsilon_clip: Option<ElemType>,
@@ -43,6 +44,22 @@ pub struct ConfigParams {
 
 pub fn config_route() -> Router<AppState> {
     Router::new().route("/config", post(create_profile))
+}
+
+// Custom Serde Deserializer for strict float deserialization
+fn strict_float_validation<'de, D>(deserializer: D) -> Result<Option<ElemType>, D::Error>
+where
+    D: serde::Deserializer<'de>,
+{
+    let v = Option::<ElemType>::deserialize(deserializer)?;
+    match v {
+        Some(v) if (0.0..=1.0).contains(&v) => Ok(Some(v)),
+        Some(v) => Err(serde::de::Error::custom(format!(
+            "value {} must be a float",
+            v
+        ))),
+        None => Ok(None),
+    }
 }
 
 async fn create_profile(
