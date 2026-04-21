@@ -13,22 +13,11 @@
   {% include "live.html" %}
 </div>
 
-<!-- Stat Cards -->
 {% include "cards.html" %}
 
-<!-- Charts + SSE logic -->
 {% include "charts.html" %}
 
-<!-- Actions -->
-<div class="flex gap-3">
-  <button
-    class="btn btn-primary btn-sm"
-    onclick="alert('Oh dang. We haven\'t implemented that yet')"
-  >
-    Save Model
-  </button>
-  <button class="btn btn-ghost btn-sm" onclick="clearData()">Clear</button>
-</div>
+{% include "actions.html" %}
 
 {% include "sse.html" %}
 

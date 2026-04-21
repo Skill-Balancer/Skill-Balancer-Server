@@ -57,4 +57,13 @@ function push(arr, val) {
     console.warn("SSE connection lost, retrying...");
     setLive(false);
   };
+
+const config_source = new EventSource("/config");
+config_source.addEventListener("config", async (e) => {
+  const config_name = JSON.parse(e.data);
+  let res = await fetch("/checkpoint");
+  const result = await res.json();
+  checkpoints = result.checkpoints;
+  renderCheckpoints();
+});
 </script>

@@ -21,6 +21,7 @@ async fn handle_checkpoint(
             let checkpoint = CheckPoint::new(profile.name.clone(), id);
             checkpoint.save(profile.trainer.model.clone());
 
+            state.config_tx.send(profile.name.clone()).unwrap();
             (
                 StatusCode::OK,
                 Json(json!({
