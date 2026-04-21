@@ -53,10 +53,7 @@ async fn create_profile(
     match validate_hyperparams(&payload.hyperparameters) {
         Ok(()) => {}
         Err(err) => {
-            return (
-                StatusCode::BAD_REQUEST,
-                Json(json!({"HPError": err})),
-            );
+            return (StatusCode::BAD_REQUEST, Json(json!({"HPError": err})));
         }
     }
 
