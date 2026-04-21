@@ -11,7 +11,9 @@ use burn_rl::base::ElemType;
 use sea_orm::ActiveValue::Set;
 use sea_orm::{IntoActiveModel, TryIntoModel};
 use serde::{Deserialize, Serialize};
-use serde_json::json;
+use serde_json::{json, Value};
+use serde::de::{self, Deserializer};
+
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
@@ -46,21 +48,7 @@ pub fn config_route() -> Router<AppState> {
     Router::new().route("/config", post(create_profile))
 }
 
-// Custom Serde Deserializer for strict float deserialization
-fn strict_float_validation<'de, D>(deserializer: D) -> Result<Option<ElemType>, D::Error>
-where
-    D: serde::Deserializer<'de>,
-{
-    let v = Option::<ElemType>::deserialize(deserializer)?;
-    match v {
-        Some(v) if (0.0..=1.0).contains(&v) => Ok(Some(v)),
-        Some(v) => Err(serde::de::Error::custom(format!(
-            "value {} must be a float",
-            v
-        ))),
-        None => Ok(None),
-    }
-}
+
 
 async fn create_profile(
     State(state): State<AppState>,
@@ -262,5 +250,32 @@ impl From<config::Model> for PPOTrainingConfig {
             batch_size: config.batch_size as usize,
             clip_grad: Some(GradientClippingConfig::Value(config.clip_grad)),
         }
+    }
+}
+
+
+// Custom Serde Deserializer for strict float deserialization
+fn strict_float_validation<'de, D>(deserializer: D) -> Result<Option<f32>, D::Error>
+where
+    D: Deserializer<'de>,
+{
+    let v = Option::<Value>::deserialize(deserializer)?;
+    match v {
+        None => Ok(None),
+        Some(Value::Number(n)) => {
+            if n.is_i64() {
+                return Err(de::Error::custom(
+                    "integer not allowed, must be float like 1.0",
+                ));
+            }
+            
+            let f = n
+                .as_f64()
+                .ok_or_else(|| de::Error::custom("invalid number"))?;
+
+            Ok(Some(f as f32))
+        }
+
+        Some(_) => Err(de::Error::custom("expected number")),
     }
 }
