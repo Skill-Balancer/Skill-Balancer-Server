@@ -23,7 +23,7 @@ async fn handle_exports_model(State(state): State<AppState>) -> impl IntoRespons
                 StatusCode::OK,
                 Json(json!({
                     "message": format!("List of exports"),
-                    "saves": exports_info,
+                    "exports": exports_info,
                 })),
             )
         }

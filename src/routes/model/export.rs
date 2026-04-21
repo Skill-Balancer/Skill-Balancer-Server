@@ -32,6 +32,16 @@ async fn handle_export_model(
                     );
                 }
             };
+
+            match state.config_tx.send(profile.name.clone()) {
+                Ok(_) => (),
+                Err(e) => {
+                    return (
+                        StatusCode::INTERNAL_SERVER_ERROR,
+                        Json(json!({"message": format!("Failed to send config update: {}", e)})),
+                    );
+                }
+            }
             let checkpoint = CheckPoint::new(profile.name.clone(), id);
             let res = checkpoint.export(profile.trainer.model.clone(), &device);
 
