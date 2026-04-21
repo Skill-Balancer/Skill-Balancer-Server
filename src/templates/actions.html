@@ -13,15 +13,8 @@
 </div>
 
 <script>
-  let checkpoints = [
-    {model_id: "Checkpoint 1"},
-    {model_id: "Checkpoint 2"},
-  ];
-
-  let exports = [
-    {model_id: "Export 1", url: "/exports/1"},
-    {model_id: "Export 2", url: "/exports/2"},
-  ];
+  let checkpoints = [];
+  let exports = [];
 
   function renderCheckpoints() {
     const list = document.getElementById("checkpoint-list");
@@ -30,7 +23,7 @@
         (cp) => `
       <li class="flex items-center gap-2">
         <span class="text-xs text-base-content/50">${cp.model_id}</span>
-        <button class="text-xs text-blue-500 hover:underline">Load</button>
+        <button onclick="loadCheckpoint(\'${cp.model_id}\')" class="text-xs text-blue-500 hover:underline">Load</button>
       </li>
     `,
       )
@@ -51,6 +44,25 @@
       .join("");
   }
 
-  renderCheckpoints();
-  renderExports();
+  async function loadCheckpoint(model_id) {
+    if (
+      !confirm(
+        `Are you sure you want to load checkpoint ${model_id}? This will overwrite the current model.`,
+      )
+    ) {
+      return;
+    }
+    try {
+      const res = await fetch(`/load/${model_id}`);
+      const result = await res.json();
+      if (!res.ok) {
+        alert(`Failed to load checkpoint: ${result.error}`);
+        return;
+      }
+      alert(`Checkpoint ${model_id} loaded successfully!`);
+    } catch (err) {
+      console.error("Error loading checkpoint:", err);
+      alert("An error occurred while loading the checkpoint.");
+    }
+  }
 </script>
