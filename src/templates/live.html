@@ -1,0 +1,24 @@
+<div class="flex items-center gap-2">
+  <span id="live-dot" class="live-dot inline-block w-2 h-2 rounded-full bg-success"></span>
+  <span id="live-text" class="text-xs text-base-content/50 uppercase tracking-widest">Live</span>
+</div>
+
+<script>
+  function setLive(isLive) {
+    const dot = document.getElementById("live-dot");
+    const text = document.getElementById("live-text");
+    if (isLive) {
+      dot.classList.add("bg-success");
+      dot.classList.remove("bg-gray-500");
+      text.textContent = "Live";
+      text.classList.remove("text-gray-500");
+      text.classList.add("text-base-content/50");
+    } else {
+      dot.classList.remove("bg-success");
+      dot.classList.add("bg-gray-500");
+      text.textContent = "Offline";
+      text.classList.remove("text-base-content/50");
+      text.classList.add("text-gray-500");
+    }
+  }
+</script>
