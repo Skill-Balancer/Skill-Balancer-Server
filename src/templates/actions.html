@@ -1,6 +1,14 @@
+<h1>{{config}}</h1>
+<br />
 <div class="flex gap-3">
   <!-- List of Checkpoints -->
   <div class="flex-1">
+    <div class="flex">
+      <input id="checkpoint_input" type="text" placeholder="Type here" class="input input-sm" />
+      <button onclick="createCheckpoint()" class="btn btn-sm btn-primary ml-2">
+        Create Checkpoint
+      </button>
+    </div>
     <h2 class="text-sm font-semibold text-base-content/70 mb-2">Checkpoints</h2>
     <ul id="checkpoint-list" class="flex flex-col gap-1"></ul>
   </div>
@@ -42,6 +50,24 @@
     `,
       )
       .join("");
+  }
+
+  async function createCheckpoint() {
+    const checkpoint_name = document
+      .getElementById("checkpoint_input")
+      .value.trim();
+    try {
+      const res = await fetch(`/checkpoint/${checkpoint_name}`);
+      const result = await res.json();
+      if (!res.ok) {
+        alert(`Failed to create checkpoint: ${result.error}`);
+        return;
+      }
+      alert(`Checkpoint ${result.model_id} created successfully!`);
+    } catch (err) {
+      console.error("Error creating checkpoint:", err);
+      alert("An error occurred while creating the checkpoint.");
+    }
   }
 
   async function loadCheckpoint(model_id) {
