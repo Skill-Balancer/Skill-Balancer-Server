@@ -19,12 +19,18 @@ use serde_json::json;
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct Hyperparams {
-    #[serde(deserialize_with = "strict_float_validation")]
+    #[serde(default, deserialize_with = "strict_float_validation")]
     pub gamma: Option<ElemType>,
+
+    #[serde(default, deserialize_with = "strict_float_validation")]
     pub lambda: Option<ElemType>,
+    
     pub epsilon_clip: Option<ElemType>,
     pub critic_weight: Option<ElemType>,
+    
+    #[serde(default, deserialize_with = "strict_float_validation")]
     pub entropy_weight: Option<ElemType>,
+    
     pub learning_rate: Option<ElemType>,
     pub epochs: Option<u32>,
     pub batch_size: Option<u32>,

@@ -7,7 +7,7 @@ pub fn strict_float_validation<'de, D>(deserializer: D) -> Result<Option<f32>, D
 where
     D: Deserializer<'de>,
 {
-    deserializer.deserialize_any(StrictFloatValueVisitor)
+    deserializer.deserialize_f32(StrictFloatValueVisitor)
 }
 
 
