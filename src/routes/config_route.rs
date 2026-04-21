@@ -14,6 +14,7 @@ use serde::{Deserialize, Serialize};
 use serde_json::json;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct Hyperparams {
     pub gamma: Option<ElemType>,
     pub lambda: Option<ElemType>,
@@ -48,6 +49,17 @@ async fn create_profile(
     State(state): State<AppState>,
     Json(payload): Json<ConfigParams>,
 ) -> impl IntoResponse {
+    // Validating hyper params
+    match validate_hyperparams(&payload.hyperparameters) {
+        Ok(()) => {}
+        Err(err) => {
+            return (
+                StatusCode::BAD_REQUEST,
+                Json(json!({"HPError": err})),
+            );
+        }
+    }
+
     let request_active_model = get_active_model_from_config(&payload);
     let request_model = match request_active_model.clone().try_into_model() {
         Ok(model) => model,
@@ -245,4 +257,43 @@ impl From<config::Model> for PPOTrainingConfig {
             clip_grad: Some(GradientClippingConfig::Value(config.clip_grad)),
         }
     }
+}
+
+fn validate_hyperparams(hp: &Option<Hyperparams>) -> Result<(), String> {
+    // If no hyper params just return ok. If not here then it wouldn't work.
+    let Some(hp) = hp else {
+        return Ok(());
+    };
+
+    // Using .into to convert types.
+    match hp.gamma {
+        Some(gamma) if gamma > 0.0 && gamma <= 1.0 => {}
+        Some(_) => return Err("gamma must be between 0 and 1".into()),
+        None => {}
+    }
+
+    match hp.lambda {
+        Some(lambda) if lambda >= 0.0 && lambda <= 1.0 => {}
+        Some(_) => return Err("lambda must be between 0 and 1".into()),
+        None => {}
+    }
+
+    match hp.batch_size {
+        Some(b_size) if b_size > 0 => {}
+        Some(_) => return Err("batch_size must be greater than 0".into()),
+        None => {}
+    }
+
+    match hp.learning_rate {
+        Some(l_rate) if l_rate > 0.0 => {}
+        Some(_) => return Err("learning_rate must be greater than 0".into()),
+        None => {}
+    }
+
+    match hp.epochs {
+        Some(epochs) if epochs > 0 => {}
+        Some(_) => return Err("epochs must be greater than 0".into()),
+        None => {}
+    }
+    Ok(())
 }
