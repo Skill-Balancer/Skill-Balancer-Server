@@ -31,7 +31,7 @@ pub struct Hyperparams {
 
 impl Hyperparams {
     fn validate(&self) -> Result<(), String> {
-        validate_range(self.gamma, "gamma", Some(0.0001), 1.0)?;
+        validate_range(self.gamma, "gamma", 0.0001, 1.0)?;
         Ok(())
     }
 }
@@ -260,8 +260,13 @@ impl From<config::Model> for PPOTrainingConfig {
     }
 }
 
-fn validate_range(value: Option<f32>, name: &str, min: Option<f32>, max: Option<f32>) -> Result<(), String> {
-    if value < min || value > max {
+fn validate_range(value: Option<f32>, name: &str, min: f32, max: f32) -> Result<(), String> {
+    let v = match value {
+        Some(v) => v,
+        None => return Ok(()), // or error if required
+    };
+
+    if v < min || v > max {
         return Err(format!(
             "{} must be between {} and {}",
             name, min, max
