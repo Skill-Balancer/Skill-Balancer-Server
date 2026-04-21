@@ -1,0 +1,58 @@
+<script>
+  // ── Helpers ───────────────────────────────────────────────────────────────────
+
+  function push(arr, val) {
+    arr.push(val);
+    if (arr.length > MAX_POINTS) arr.shift();
+  }
+
+  function flash(id) {
+    const el = document.getElementById(id);
+    el.classList.remove("flash");
+    void el.offsetWidth;
+    el.classList.add("flash");
+  }
+
+  // Exposed globally so the Clear button in dashboard.html can call it.
+  function clearData() {
+    [steps, rewards, policyLosses, valueLosses, entropies, clips].forEach(
+      (a) => (a.length = 0),
+    );
+    chartReward.update("none");
+    chartEntropy.update("none");
+    ["card-step", "card-reward", "card-entropy", "card-clip"].forEach((id) => {
+      document.getElementById(id).textContent = "—";
+    });
+  }
+
+  // ── SSE ───────────────────────────────────────────────────────────────────────
+
+  const source = new EventSource("/metrics");
+
+  source.addEventListener("metrics", (e) => {
+    const m = JSON.parse(e.data);
+
+    push(steps, m.step);
+    push(rewards, m.mean_reward);
+    push(policyLosses, m.policy_loss);
+    push(valueLosses, m.value_loss);
+    push(entropies, m.entropy);
+    push(clips, m.clip_fraction);
+
+    chartReward.update("none");
+    chartEntropy.update("none");
+
+    document.getElementById("card-step").textContent = m.step;
+    document.getElementById("card-reward").textContent =
+      m.mean_reward.toFixed(4);
+    document.getElementById("card-entropy").textContent = m.entropy.toFixed(4);
+    document.getElementById("card-clip").textContent =
+      m.clip_fraction.toFixed(4);
+
+    flash("card-reward");
+    flash("card-entropy");
+    flash("card-clip");
+  });
+
+  source.onerror = () => console.warn("SSE connection lost, retrying...");
+</script>

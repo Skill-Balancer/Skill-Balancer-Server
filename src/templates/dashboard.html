@@ -17,10 +17,10 @@
 </div>
 
 <!-- Stat Cards -->
-{% include "dashboard_cards.html" %}
+{% include "cards.html" %}
 
 <!-- Charts + SSE logic -->
-{% include "dashboard_charts.html" %}
+{% include "charts.html" %}
 
 <!-- Actions -->
 <div class="flex gap-3">
@@ -32,5 +32,7 @@
   </button>
   <button class="btn btn-ghost btn-sm" onclick="clearData()">Clear</button>
 </div>
+
+{% include "sse.html" %}
 
 {% endblock %}

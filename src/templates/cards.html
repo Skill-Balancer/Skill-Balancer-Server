@@ -1,0 +1,7 @@
+{% import "card.html" as card %}
+<div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+  {{ card::card("Step", "card-step","text-base-content") }}
+  {{ card::card("Reward", "card-reward","text-success") }}
+  {{ card::card("Entropy", "card-entropy","text-secondary") }}
+  {{ card::card("Clip Fraction", "card-clip","text-warning") }}
+</div>
