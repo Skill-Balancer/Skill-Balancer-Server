@@ -11,8 +11,9 @@ use burn_rl::base::ElemType;
 use sea_orm::ActiveValue::Set;
 use sea_orm::{IntoActiveModel, TryIntoModel};
 use serde::{Deserialize, Serialize};
-use serde_json::{json, Value};
-use serde::de::{self, Deserializer};
+use serde_json::json;
+use std::fmt;
+use serde::de::{self, Deserializer, Visitor};
 
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -255,31 +256,46 @@ impl From<config::Model> for PPOTrainingConfig {
 
 
 // Custom Serde Deserializer for strict float deserialization
-fn strict_float_validation<'de, D>(deserializer: D) -> Result<Option<f32>, D::Error>
+pub fn strict_float_validation<'de, D>(deserializer: D) -> Result<Option<f32>, D::Error>
 where
     D: Deserializer<'de>,
 {
-    // Serde deserialization for floats like f32 is not strict enough so we do it manually
-    let v = Option::<Value>::deserialize(deserializer)?;
-    match v {
-        None => Ok(None),
-        Some(Value::Number(n)) => {
-            if n.is_i64() {
-                return Err(de::Error::custom(
-                    "integer not allowed, must be float",
-                ));
-            }
+    deserializer.deserialize_option(StrictFloatVisitor)
+}
 
-            // Tries to convert to float returns if failure
-            let f = match n.as_f64() {
-                Some(f) => f,
-                None => return Err(de::Error::custom("invalid number")),
-            };
+struct StrictFloatVisitor;
+impl<'de> Visitor<'de> for StrictFloatVisitor {
+    type Value = Option<f32>;
 
-            // Returns float
-            Ok(Some(f as f32))
-        }
+    fn expecting(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        f.write_str("a floating point number (not an integer)")
+    }
 
-        Some(_) => Err(de::Error::custom("expected number")),
+    fn visit_none<E>(self) -> Result<Self::Value, E>
+    where
+        E: de::Error,
+    {
+        Ok(None)
+    }
+
+    fn visit_f64<E>(self, v: f64) -> Result<Self::Value, E>
+    where
+        E: de::Error,
+    {
+        Ok(Some(v as f32))
+    }
+
+    fn visit_i64<E>(self, _v: i64) -> Result<Self::Value, E>
+    where
+        E: de::Error,
+    {
+        Err(E::custom("integer not allowed, must be float"))
+    }
+
+    fn visit_u64<E>(self, _v: u64) -> Result<Self::Value, E>
+    where
+        E: de::Error,
+    {
+        Err(E::custom("integer not allowed, must be float"))
     }
 }
