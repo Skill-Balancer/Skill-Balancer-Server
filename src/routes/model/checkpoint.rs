@@ -18,10 +18,17 @@ async fn handle_checkpoint(
 ) -> impl IntoResponse {
     match state.profile.lock().await.as_ref() {
         Some(profile) => {
+            match state.config_tx.send(profile.name.clone()) {
+                Ok(_) => (),
+                Err(e) => {
+                    return (
+                        StatusCode::INTERNAL_SERVER_ERROR,
+                        Json(json!({"message": format!("Failed to send config update: {}", e)})),
+                    );
+                }
+            }
             let checkpoint = CheckPoint::new(profile.name.clone(), id);
             checkpoint.save(profile.trainer.model.clone());
-
-            state.config_tx.send(profile.name.clone()).unwrap();
             (
                 StatusCode::OK,
                 Json(json!({

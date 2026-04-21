@@ -58,12 +58,32 @@ function push(arr, val) {
     setLive(false);
   };
 
-const config_source = new EventSource("/config");
-config_source.addEventListener("config", async (e) => {
-  const config_name = JSON.parse(e.data);
+async function fetchCheckpoints() {
   let res = await fetch("/checkpoint");
   const result = await res.json();
+  if (!res.ok) {
+    console.error("Failed to fetch checkpoints:", result.error);
+    return;
+  }
   checkpoints = result.checkpoints;
   renderCheckpoints();
+}
+async function fetchExports() {
+  let res = await fetch("/export");
+  const result = await res.json();
+  if (!res.ok) {
+    console.error("Failed to fetch exports:", result.error);
+    return;
+  }
+  exports = result.exports;
+  renderExports();
+}
+fetchCheckpoints();
+fetchExports();
+
+const config_source = new EventSource("/config");
+config_source.addEventListener("config", async (e) => {
+  fetchCheckpoints();
+  fetchExports();
 });
 </script>
