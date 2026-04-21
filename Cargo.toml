@@ -34,3 +34,4 @@ sea-orm = { version = "2.0.0-rc", features = [
     "entity-registry",
 ] }
 rand = "0.8.5"
+serdev     = { version = "0.3", features = ["derive"] }

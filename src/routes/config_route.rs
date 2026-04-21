@@ -3,7 +3,6 @@ use crate::entities::config::{self, ActiveModel, StringVec};
 use crate::network::profile::Profile;
 use crate::storage::model::delete_config_files;
 
-use crate::validation::strict_float::strict_float_validation;
 use axum::extract::State;
 use axum::response::IntoResponse;
 use axum::{Json, Router, http::StatusCode, routing::post};
@@ -12,30 +11,31 @@ use burn_rl::agent::PPOTrainingConfig;
 use burn_rl::base::ElemType;
 use sea_orm::ActiveValue::Set;
 use sea_orm::{IntoActiveModel, TryIntoModel};
-use serde::{Deserialize, Serialize};
 use serde_json::json;
-
+use serdev::{Serialize, Deserialize};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
+#[serde(validate = "Self::validate")]
 pub struct Hyperparams {
-    #[serde(default, deserialize_with = "strict_float_validation")]
     pub gamma: Option<ElemType>,
-
-    #[serde(default, deserialize_with = "strict_float_validation")]
     pub lambda: Option<ElemType>,
-    
     pub epsilon_clip: Option<ElemType>,
     pub critic_weight: Option<ElemType>,
-    
-    #[serde(default, deserialize_with = "strict_float_validation")]
     pub entropy_weight: Option<ElemType>,
-    
     pub learning_rate: Option<ElemType>,
     pub epochs: Option<u32>,
     pub batch_size: Option<u32>,
     pub clip_grad: Option<f32>,
 }
+
+impl Hyperparams {
+    fn validate(&self) -> Result<(), String> {
+        validate_range(self.gamma, "gamma", Some(0.0001), 1.0)?;
+        Ok(())
+    }
+}
+
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ConfigParams {
@@ -260,3 +260,12 @@ impl From<config::Model> for PPOTrainingConfig {
     }
 }
 
+fn validate_range(value: Option<f32>, name: &str, min: Option<f32>, max: Option<f32>) -> Result<(), String> {
+    if value < min || value > max {
+        return Err(format!(
+            "{} must be between {} and {}",
+            name, min, max
+        ));
+    }
+    Ok(())
+}
