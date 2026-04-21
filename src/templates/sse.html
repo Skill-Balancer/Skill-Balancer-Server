@@ -1,7 +1,5 @@
 <script>
-  // ── Helpers ───────────────────────────────────────────────────────────────────
-
-  function push(arr, val) {
+function push(arr, val) {
     arr.push(val);
     if (arr.length > MAX_POINTS) arr.shift();
   }
@@ -13,7 +11,6 @@
     el.classList.add("flash");
   }
 
-  // Exposed globally so the Clear button in dashboard.html can call it.
   function clearData() {
     [steps, rewards, policyLosses, valueLosses, entropies, clips].forEach(
       (a) => (a.length = 0),
@@ -24,8 +21,6 @@
       document.getElementById(id).textContent = "—";
     });
   }
-
-  // ── SSE ───────────────────────────────────────────────────────────────────────
 
   const source = new EventSource("/metrics");
 
@@ -39,8 +34,7 @@
     push(entropies, m.entropy);
     push(clips, m.clip_fraction);
 
-    chartReward.update("none");
-    chartEntropy.update("none");
+    update_charts();
 
     document.getElementById("card-step").textContent = m.step;
     document.getElementById("card-reward").textContent =
@@ -54,5 +48,13 @@
     flash("card-clip");
   });
 
-  source.onerror = () => console.warn("SSE connection lost, retrying...");
+  source.onopen = () => {
+    console.log("SSE connection established");
+    setLive(true);
+  };
+
+  source.onerror = () => {
+    console.warn("SSE connection lost, retrying...");
+    setLive(false);
+  };
 </script>

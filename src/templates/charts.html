@@ -2,7 +2,8 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 
 <div class="grid grid-cols-1 gap-4 mb-8">
-  {{ chart::chart("Reward & Loss", "chartReward") }}
+  {{ chart::chart("Reward", "chartReward") }}
+  {{ chart::chart("Loss", "chartLoss") }}
   {{ chart::chart("Entropy & Clip Fraction", "chartEntropy") }}
 </div>
 
@@ -20,24 +21,22 @@
         labels: {
           boxWidth: 12,
           boxHeight: 2,
-          font: { size: 11, family: "ui-monospace, monospace" },
+          font: {size: 11, family: "ui-monospace, monospace"},
           color: "rgba(255,255,255,0.5)",
         },
       },
     },
     scales: {
       x: {
-        ticks: { maxTicksLimit: 8, font: { size: 10 } },
-        grid: { color: "rgba(255,255,255,0.05)" },
+        ticks: {maxTicksLimit: 8, font: {size: 10}},
+        grid: {color: "rgba(255,255,255,0.05)"},
       },
       y: {
-        ticks: { font: { size: 10 } },
-        grid: { color: "rgba(255,255,255,0.05)" },
+        ticks: {font: {size: 10}},
+        grid: {color: "rgba(255,255,255,0.05)"},
       },
     },
   };
-
-  // ── Data arrays (shared with dashboard_sse.html) ──────────────────────────────
 
   const MAX_POINTS = 60;
   const steps = [],
@@ -47,6 +46,11 @@
     entropies = [],
     clips = [];
 
+  function update_charts() {
+    chartReward.update("none");
+    chartLoss.update("none");
+    chartEntropy.update("none");
+  }
   // ── Chart definitions ─────────────────────────────────────────────────────────
 
   const chartReward = new Chart(document.getElementById("chartReward"), {
@@ -64,6 +68,16 @@
           pointRadius: 0,
           borderWidth: 2,
         },
+      ],
+    },
+    options: sharedOpts,
+  });
+
+  const chartLoss = new Chart(document.getElementById("chartLoss"), {
+    type: "line",
+    data: {
+      labels: steps,
+      datasets: [
         {
           label: "Policy loss",
           data: policyLosses,
