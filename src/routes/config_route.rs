@@ -2,6 +2,8 @@ use crate::AppState;
 use crate::entities::config::{self, ActiveModel, StringVec};
 use crate::network::profile::Profile;
 use crate::storage::model::delete_config_files;
+
+use crate::validation::strict_float::strict_float_validation;
 use axum::extract::State;
 use axum::response::IntoResponse;
 use axum::{Json, Router, http::StatusCode, routing::post};
@@ -12,8 +14,6 @@ use sea_orm::ActiveValue::Set;
 use sea_orm::{IntoActiveModel, TryIntoModel};
 use serde::{Deserialize, Serialize};
 use serde_json::json;
-use std::fmt;
-use serde::de::{self, Deserializer, Visitor};
 
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -254,48 +254,3 @@ impl From<config::Model> for PPOTrainingConfig {
     }
 }
 
-
-// Custom Serde Deserializer for strict float deserialization
-pub fn strict_float_validation<'de, D>(deserializer: D) -> Result<Option<f32>, D::Error>
-where
-    D: Deserializer<'de>,
-{
-    deserializer.deserialize_option(StrictFloatVisitor)
-}
-
-struct StrictFloatVisitor;
-impl<'de> Visitor<'de> for StrictFloatVisitor {
-    type Value = Option<f32>;
-
-    fn expecting(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        f.write_str("a floating point number (not an integer)")
-    }
-
-    fn visit_none<E>(self) -> Result<Self::Value, E>
-    where
-        E: de::Error,
-    {
-        Ok(None)
-    }
-
-    fn visit_f64<E>(self, v: f64) -> Result<Self::Value, E>
-    where
-        E: de::Error,
-    {
-        Ok(Some(v as f32))
-    }
-
-    fn visit_i64<E>(self, _v: i64) -> Result<Self::Value, E>
-    where
-        E: de::Error,
-    {
-        Err(E::custom("integer not allowed, must be float"))
-    }
-
-    fn visit_u64<E>(self, _v: u64) -> Result<Self::Value, E>
-    where
-        E: de::Error,
-    {
-        Err(E::custom("integer not allowed, must be float"))
-    }
-}

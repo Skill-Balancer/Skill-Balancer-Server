@@ -17,6 +17,8 @@ mod network;
 mod storage;
 #[cfg(test)]
 mod tests;
+// importing serde custom validators
+mod validation;
 
 #[derive(Clone)]
 struct AppState {
