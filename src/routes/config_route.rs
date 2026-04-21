@@ -257,12 +257,11 @@ impl From<config::Model> for PPOTrainingConfig {
 }
 
 fn validate_hyperparams(hp: &Option<Hyperparams>) -> Result<(), String> {
-    // If no hyper params just return ok. If not here then it wouldn't work.
+    // If no hyper params just return ok and skip validation since default hyper params is handled already
     let Some(hp) = hp else {
         return Ok(());
     };
 
-    // Using .into to convert types.
     match hp.gamma {
         Some(gamma) if gamma > 0.0 && gamma <= 1.0 => {}
         Some(_) => return Err("gamma must be between 0 and 1".into()),
