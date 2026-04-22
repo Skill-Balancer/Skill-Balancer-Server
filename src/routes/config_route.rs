@@ -2,7 +2,7 @@ use crate::AppState;
 use crate::entities::config::{self, ActiveModel, StringVec};
 use crate::network::profile::Profile;
 use crate::storage::model::delete_config_files;
-use crate::utils::validation::{range, positive};
+use crate::utils::validation::{positive, range};
 use axum::extract::State;
 use axum::response::IntoResponse;
 use axum::{Json, Router, http::StatusCode, routing::post};
