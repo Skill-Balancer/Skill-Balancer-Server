@@ -30,9 +30,7 @@ struct AppState {
 async fn main() {
     dotenv().ok();
     let db = DB::new().await.expect("Failed to connect to database");
-    db.sync_schema()
-        .await
-        .unwrap(); // this line does not work, and i dont know why it should crash on failed sync
+    db.sync_schema().await.unwrap(); // this line does not work, and i dont know why it should crash on failed sync
 
     let state = AppState {
         profile: Arc::new(Mutex::new(None)),
