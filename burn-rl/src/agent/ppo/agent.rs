@@ -9,7 +9,7 @@ use burn::module::AutodiffModule;
 use burn::nn::loss::{MseLoss, Reduction};
 use burn::optim::Optimizer;
 use burn::tensor::backend::{AutodiffBackend, Backend};
-use burn::tensor::Tensor;
+use burn::tensor::{ElementConversion, Tensor};
 use std::marker::PhantomData;
 
 pub struct PPO<E: Environment, B: Backend, M: PPOModel<B>> {
@@ -54,7 +54,8 @@ impl<E: Environment, B: AutodiffBackend, M: PPOModel<B> + AutodiffModule<B>> PPO
         memory: &Memory<E, B, CAP>,
         optimizer: &mut (impl Optimizer<M, B> + Sized),
         config: &PPOTrainingConfig,
-    ) -> M {
+    ) -> PPOTrainOutput<M> {
+        let mut epoch_metrics = EpochMetrics::default();
         let memory_indices = (0..memory.len()).collect::<MemoryIndices>();
         let PPOOutput {
             policies: mut old_polices,
@@ -116,7 +117,7 @@ impl<E: Environment, B: AutodiffBackend, M: PPOModel<B> + AutodiffModule<B>> PPO
                         .clamp(1.0 - config.epsilon_clip, 1.0 + config.epsilon_clip);
 
                     let actor_loss = -elementwise_min(
-                        ratios * advantage_batch.clone(),
+                        ratios.clone() * advantage_batch.clone(),
                         clipped_ratios * advantage_batch,
                     )
                     .sum();
@@ -127,6 +128,30 @@ impl<E: Environment, B: AutodiffBackend, M: PPOModel<B> + AutodiffModule<B>> PPO
                         .sum_dim(1)
                         .mean();
 
+                    // Convert losses to scalars for logging
+                    let policy_loss_scalar = actor_loss.clone().into_scalar().elem::<f32>();
+                    let value_loss_scalar = critic_loss.clone().into_scalar().elem::<f32>();
+                    let entropy_scalar =
+                        -policy_negative_entropy.clone().into_scalar().elem::<f32>();
+
+                    let clip_fraction_scalar = {
+                        let lo = 1.0 - config.epsilon_clip;
+                        let hi = 1.0 + config.epsilon_clip;
+                        let ratio_data: Vec<f32> = ratios
+                            .clone()
+                            .into_data()
+                            .to_vec::<f32>()
+                            .unwrap_or_default();
+                        let clipped = ratio_data.iter().filter(|&&r| r < lo || r > hi).count();
+                        clipped as f32 / ratio_data.len().max(1) as f32
+                    };
+
+                    epoch_metrics.record(
+                        policy_loss_scalar,
+                        value_loss_scalar,
+                        entropy_scalar,
+                        clip_fraction_scalar,
+                    );
                     let loss = actor_loss
                         + critic_loss.mul_scalar(config.critic_weight)
                         + policy_negative_entropy.mul_scalar(config.entropy_weight);
@@ -135,7 +160,10 @@ impl<E: Environment, B: AutodiffBackend, M: PPOModel<B> + AutodiffModule<B>> PPO
                 }
             }
         }
-        policy_net
+        PPOTrainOutput {
+            model: policy_net,
+            metrics: epoch_metrics,
+        }
     }
 
     pub fn valid(&self, model: M) -> PPO<E, B::InnerBackend, M::InnerModule>
@@ -192,4 +220,44 @@ pub(crate) fn get_gae<B: Backend>(
         Tensor::<B, 1>::from_floats(advantages.as_slice(), &Default::default())
             .reshape([advantages.len(), 1]),
     ))
+}
+pub struct PPOTrainOutput<M> {
+    pub model: M,
+    pub metrics: EpochMetrics,
+}
+
+#[derive(Default)]
+pub struct EpochMetrics {
+    pub policy_loss: f32,
+    pub value_loss: f32,
+    pub entropy: f32,
+    pub clip_fraction: f32,
+    pub updates: usize,
+}
+
+impl EpochMetrics {
+    pub fn record(&mut self, policy_loss: f32, value_loss: f32, entropy: f32, clip_fraction: f32) {
+        self.policy_loss += policy_loss;
+        self.value_loss += value_loss;
+        self.entropy += entropy;
+        self.clip_fraction += clip_fraction;
+        self.updates += 1;
+    }
+
+    pub fn averaged(self) -> AveragedMetrics {
+        let n = self.updates.max(1) as f32;
+        AveragedMetrics {
+            policy_loss: self.policy_loss / n,
+            value_loss: self.value_loss / n,
+            entropy: self.entropy / n,
+            clip_fraction: self.clip_fraction / n,
+        }
+    }
+}
+
+pub struct AveragedMetrics {
+    pub policy_loss: f32,
+    pub value_loss: f32,
+    pub entropy: f32,
+    pub clip_fraction: f32,
 }

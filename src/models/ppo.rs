@@ -10,13 +10,14 @@ use burn::{
     },
 };
 use burn_rl::{
-    agent::{PPO, PPOModel, PPOOutput, PPOTrainingConfig},
+    agent::{AveragedMetrics, PPO, PPOModel, PPOOutput, PPOTrainOutput, PPOTrainingConfig},
     base::{Memory, Model},
 };
+use ringbuffer::RingBuffer;
 
 use crate::{
-    env::print_steps,
-    models::{action::GameAction, environment::GameEnv, state::GameState},
+    env::{print_steps, print_training},
+    models::{action::GameAction, environment::GameEnv, metrics::Metrics, state::GameState},
 };
 
 #[derive(Module, Debug)]
@@ -114,14 +115,28 @@ impl<B: AutodiffBackend> PPOTrainer<B> {
                     "step: {}, reward: {}, memory size: {}",
                     self.steps,
                     reward,
-                    self.memory.len()
+                    self.memory.len(),
                 );
+                if done {
+                    println!("Episode finished!");
+                }
             }
 
             if self.train_every <= MEMORY_SIZE && self.steps.is_multiple_of(self.train_every) {
-                println!("Training PPO model at step {}...", self.steps);
-                self.train();
-                println!("Finished training PPO model at step {}", self.steps);
+                let mean_reward = self.mean_reward();
+                if let Some(m) = self.train() {
+                    let metrics = Metrics {
+                        step: self.steps,
+                        mean_reward,
+                        policy_loss: m.policy_loss,
+                        value_loss: m.value_loss,
+                        entropy: m.entropy,
+                        clip_fraction: m.clip_fraction,
+                    };
+                    if print_training() {
+                        metrics.print_pretty();
+                    }
+                }
             }
         }
         self.last_state = Some(env.state.clone());
@@ -132,17 +147,27 @@ impl<B: AutodiffBackend> PPOTrainer<B> {
         }
     }
 
-    pub fn train(&mut self) {
+    pub fn train(&mut self) -> Option<AveragedMetrics> {
         if self.memory.len() == 0 || self.memory.len() < self.config.batch_size {
-            return;
+            return None;
         }
 
-        self.model = PPO::<GameEnv, B, Net<B>>::train(
+        let PPOTrainOutput { model, metrics } = PPO::<GameEnv, B, Net<B>>::train(
             self.model.clone(),
             &self.memory,
             &mut self.optimizer,
             &self.config,
         );
+        self.model = model;
         self.memory.clear();
+        let averaged = metrics.averaged();
+        Some(averaged)
+    }
+    fn mean_reward(&self) -> f32 {
+        let rewards = self.memory.rewards();
+        if rewards.is_empty() {
+            return 0.0;
+        }
+        rewards.iter().sum::<f32>() / rewards.len() as f32
     }
 }

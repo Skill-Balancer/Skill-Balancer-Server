@@ -15,6 +15,7 @@ edition = "2024"
 
 
 [dependencies]
+ringbuffer = "0.15.0"
 burn-rl = { path = "burn-rl" }
 axum = "0.8.8"
 bacon = "3.22.0"
@@ -34,3 +35,4 @@ sea-orm = { version = "2.0.0-rc", features = [
     "entity-registry",
 ] }
 rand = "0.8.5"
+colored = "3.1.1"
