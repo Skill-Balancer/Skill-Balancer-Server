@@ -17,6 +17,8 @@ mod network;
 mod storage;
 #[cfg(test)]
 mod tests;
+// importing utils
+mod utils;
 
 #[derive(Clone)]
 struct AppState {

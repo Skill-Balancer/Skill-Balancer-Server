@@ -2,6 +2,7 @@ use crate::AppState;
 use crate::entities::config::{self, ActiveModel, StringVec};
 use crate::network::profile::Profile;
 use crate::storage::model::delete_config_files;
+use crate::utils::validation::{range, positive};
 use axum::extract::State;
 use axum::response::IntoResponse;
 use axum::{Json, Router, http::StatusCode, routing::post};
@@ -22,8 +23,8 @@ pub struct Hyperparams {
     pub critic_weight: Option<ElemType>,
     pub entropy_weight: Option<ElemType>,
     pub learning_rate: Option<ElemType>,
-    pub epochs: Option<u32>,
-    pub batch_size: Option<u32>,
+    pub epochs: Option<i32>,
+    pub batch_size: Option<i32>,
     pub clip_grad: Option<f32>,
 }
 
@@ -215,8 +216,8 @@ fn get_active_model_from_config(config: &ConfigParams) -> ActiveModel {
         critic_weight: Some(defaults.critic_weight),
         entropy_weight: Some(defaults.entropy_weight),
         learning_rate: Some(defaults.learning_rate),
-        epochs: Some(defaults.epochs as u32),
-        batch_size: Some(defaults.batch_size as u32),
+        epochs: Some(defaults.epochs as i32),
+        batch_size: Some(defaults.batch_size as i32),
         clip_grad: Some(0.5),
     });
 
@@ -234,8 +235,8 @@ fn get_active_model_from_config(config: &ConfigParams) -> ActiveModel {
             .entropy_weight
             .unwrap_or(defaults.entropy_weight)),
         learning_rate: Set(hyperparams.learning_rate.unwrap_or(defaults.learning_rate)),
-        epochs: Set(hyperparams.epochs.unwrap_or(defaults.epochs as u32)),
-        batch_size: Set(hyperparams.batch_size.unwrap_or(defaults.batch_size as u32)),
+        epochs: Set(hyperparams.epochs.unwrap_or(defaults.epochs as i32) as u32),
+        batch_size: Set(hyperparams.batch_size.unwrap_or(defaults.batch_size as i32) as u32),
         clip_grad: Set(hyperparams.clip_grad.unwrap_or(0.5)),
     }
 }
@@ -262,33 +263,34 @@ fn validate_hyperparams(hp: &Option<Hyperparams>) -> Result<(), String> {
         return Ok(());
     };
 
-    match hp.gamma {
-        Some(gamma) if gamma > 0.0 && gamma <= 1.0 => {}
-        Some(_) => return Err("gamma must be between 0 and 1".into()),
-        None => {}
-    }
+    let mut arr: Vec<Result<(), String>> = vec![];
 
-    if let Some(lambda) = hp.lambda && (lambda < 0.0 || lambda > 1.0){
-        return Err("lambda must be between 0 and 1".into())
-    }
+    arr.push(range("gamma", hp.gamma, 0.0, 1.0));
 
+    arr.push(range("lambda", hp.lambda, 0.0, 1.0));
 
-    match hp.batch_size {
-        Some(b_size) if b_size > 0 => {}
-        Some(_) => return Err("batch_size must be greater than 0".into()),
-        None => {}
-    }
+    arr.push(positive("epsilon_clip", hp.epsilon_clip));
 
-    match hp.learning_rate {
-        Some(l_rate) if l_rate > 0.0 => {}
-        Some(_) => return Err("learning_rate must be greater than 0".into()),
-        None => {}
-    }
+    arr.push(range("critic_weight", hp.critic_weight, 0.0, 1.0));
 
-    match hp.epochs {
-        Some(epochs) if epochs > 0 => {}
-        Some(_) => return Err("epochs must be greater than 0".into()),
-        None => {}
+    arr.push(range("entropy_weight", hp.entropy_weight, 0.0, 1.0));
+
+    arr.push(positive("batch_size", hp.batch_size));
+
+    arr.push(positive("learning_rate", hp.learning_rate));
+
+    arr.push(positive("epochs", hp.epochs));
+
+    arr.push(positive("clip_grad", hp.clip_grad));
+
+    let mut error_message: String = String::new();
+    for func in arr {
+        if let Err(e) = func {
+            error_message.push_str(&format!("{}\n", e));
+        }
     }
-    Ok(())
+    if error_message.is_empty() {
+        return Ok(());
+    }
+    Err(error_message)
 }
