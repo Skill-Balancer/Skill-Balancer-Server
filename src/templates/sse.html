@@ -83,6 +83,7 @@ fetchExports();
 
 const config_source = new EventSource("/config");
 config_source.addEventListener("config", async (e) => {
+  clearData();
   fetchCheckpoints();
   fetchExports();
 });

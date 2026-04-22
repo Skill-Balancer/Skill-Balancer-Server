@@ -98,10 +98,7 @@ async fn update_profile(state: &AppState, config: config::Model) {
     let profile_name = new_profile.name.clone();
     *profile = Some(new_profile);
     println!("Profile '{}' is now active.", profile_name);
-    state.config_tx.send(profile_name).unwrap_or_else(|e| {
-        eprintln!("Failed to send config update: {}", e);
-        0
-    });
+    state.config_tx.send(profile_name).ok(); // Ignore if this errors
 }
 
 async fn try_cmp_configs(
