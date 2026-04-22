@@ -2,6 +2,7 @@ use crate::AppState;
 use crate::entities::config::{self, ActiveModel, StringVec};
 use crate::network::profile::Profile;
 use crate::storage::model::delete_config_files;
+use crate::utils::validation::{positive, range};
 use axum::extract::State;
 use axum::response::IntoResponse;
 use axum::{Json, Router, http::StatusCode, routing::post};
@@ -14,6 +15,7 @@ use serde::{Deserialize, Serialize};
 use serde_json::json;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct Hyperparams {
     pub gamma: Option<ElemType>,
     pub lambda: Option<ElemType>,
@@ -21,8 +23,8 @@ pub struct Hyperparams {
     pub critic_weight: Option<ElemType>,
     pub entropy_weight: Option<ElemType>,
     pub learning_rate: Option<ElemType>,
-    pub epochs: Option<u32>,
-    pub batch_size: Option<u32>,
+    pub epochs: Option<i32>,
+    pub batch_size: Option<i32>,
     pub clip_grad: Option<f32>,
 }
 
@@ -48,6 +50,14 @@ async fn create_profile(
     State(state): State<AppState>,
     Json(payload): Json<ConfigParams>,
 ) -> impl IntoResponse {
+    // Validating hyper params
+    match validate_hyperparams(&payload.hyperparameters) {
+        Ok(()) => {}
+        Err(err) => {
+            return (StatusCode::BAD_REQUEST, Json(json!({"HPError": err})));
+        }
+    }
+
     let request_active_model = get_active_model_from_config(&payload);
     let request_model = match request_active_model.clone().try_into_model() {
         Ok(model) => model,
@@ -210,8 +220,8 @@ fn get_active_model_from_config(config: &ConfigParams) -> ActiveModel {
         critic_weight: Some(defaults.critic_weight),
         entropy_weight: Some(defaults.entropy_weight),
         learning_rate: Some(defaults.learning_rate),
-        epochs: Some(defaults.epochs as u32),
-        batch_size: Some(defaults.batch_size as u32),
+        epochs: Some(defaults.epochs as i32),
+        batch_size: Some(defaults.batch_size as i32),
         clip_grad: Some(0.5),
     });
 
@@ -229,8 +239,8 @@ fn get_active_model_from_config(config: &ConfigParams) -> ActiveModel {
             .entropy_weight
             .unwrap_or(defaults.entropy_weight)),
         learning_rate: Set(hyperparams.learning_rate.unwrap_or(defaults.learning_rate)),
-        epochs: Set(hyperparams.epochs.unwrap_or(defaults.epochs as u32)),
-        batch_size: Set(hyperparams.batch_size.unwrap_or(defaults.batch_size as u32)),
+        epochs: Set(hyperparams.epochs.unwrap_or(defaults.epochs as i32) as u32),
+        batch_size: Set(hyperparams.batch_size.unwrap_or(defaults.batch_size as i32) as u32),
         clip_grad: Set(hyperparams.clip_grad.unwrap_or(0.5)),
     }
 }
@@ -249,4 +259,34 @@ impl From<config::Model> for PPOTrainingConfig {
             clip_grad: Some(GradientClippingConfig::Value(config.clip_grad)),
         }
     }
+}
+
+fn validate_hyperparams(hp: &Option<Hyperparams>) -> Result<(), String> {
+    // If no hyper params just return ok and skip validation since default hyper params is handled already
+    let Some(hp) = hp else {
+        return Ok(());
+    };
+
+    let mut arr: Vec<Result<(), String>> = vec![];
+
+    arr.push(range("gamma", hp.gamma, 0.0, 1.0));
+    arr.push(range("lambda", hp.lambda, 0.0, 1.0));
+    arr.push(positive("epsilon_clip", hp.epsilon_clip));
+    arr.push(range("critic_weight", hp.critic_weight, 0.0, 1.0));
+    arr.push(range("entropy_weight", hp.entropy_weight, 0.0, 1.0));
+    arr.push(positive("batch_size", hp.batch_size));
+    arr.push(positive("learning_rate", hp.learning_rate));
+    arr.push(positive("epochs", hp.epochs));
+    arr.push(positive("clip_grad", hp.clip_grad));
+
+    let mut error_message: String = String::new();
+    for func in arr {
+        if let Err(e) = func {
+            error_message.push_str(&format!("{}\n", e));
+        }
+    }
+    if error_message.is_empty() {
+        return Ok(());
+    }
+    Err(error_message)
 }
