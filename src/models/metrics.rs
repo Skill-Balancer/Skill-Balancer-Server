@@ -1,6 +1,7 @@
 use colored::*;
+use serde::Serialize;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize)]
 pub struct Metrics {
     pub step: usize,
     pub mean_reward: f32,

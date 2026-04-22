@@ -1,0 +1,90 @@
+<script>
+function push(arr, val) {
+    arr.push(val);
+    if (arr.length > MAX_POINTS) arr.shift();
+  }
+
+  function flash(id) {
+    const el = document.getElementById(id);
+    el.classList.remove("flash");
+    void el.offsetWidth;
+    el.classList.add("flash");
+  }
+
+  function clearData() {
+    [steps, rewards, policyLosses, valueLosses, entropies, clips].forEach(
+      (a) => (a.length = 0),
+    );
+    chartReward.update("none");
+    chartEntropy.update("none");
+    ["card-step", "card-reward", "card-entropy", "card-clip"].forEach((id) => {
+      document.getElementById(id).textContent = "—";
+    });
+  }
+
+  const source = new EventSource("/metrics");
+
+  source.addEventListener("metrics", (e) => {
+    const m = JSON.parse(e.data);
+
+    push(steps, m.step);
+    push(rewards, m.mean_reward);
+    push(policyLosses, m.policy_loss);
+    push(valueLosses, m.value_loss);
+    push(entropies, m.entropy);
+    push(clips, m.clip_fraction);
+
+    update_charts();
+
+    document.getElementById("card-step").textContent = m.step;
+    document.getElementById("card-reward").textContent =
+      m.mean_reward.toFixed(4);
+    document.getElementById("card-entropy").textContent = m.entropy.toFixed(4);
+    document.getElementById("card-clip").textContent =
+      m.clip_fraction.toFixed(4);
+
+    flash("card-reward");
+    flash("card-entropy");
+    flash("card-clip");
+  });
+
+  source.onopen = () => {
+    console.log("SSE connection established");
+    setLive(true);
+  };
+
+  source.onerror = () => {
+    console.warn("SSE connection lost, retrying...");
+    setLive(false);
+  };
+
+async function fetchCheckpoints() {
+  let res = await fetch("/checkpoint");
+  const result = await res.json();
+  if (!res.ok) {
+    console.error("Failed to fetch checkpoints:", result.error);
+    return;
+  }
+  checkpoints = result.checkpoints;
+  renderCheckpoints();
+}
+async function fetchExports() {
+  let res = await fetch("/export");
+  const result = await res.json();
+  if (!res.ok) {
+    console.error("Failed to fetch exports:", result.error);
+    return;
+  }
+  exports = result.exports;
+  renderExports();
+}
+fetchCheckpoints();
+fetchExports();
+
+const config_source = new EventSource("/config");
+config_source.addEventListener("config", async (e) => {
+  clearData();
+  fetchCheckpoints();
+  fetchExports();
+});
+</script>

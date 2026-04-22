@@ -1,13 +1,36 @@
 use crate::AppState;
 use askama::Template;
-use axum::{Router, response::Html, routing::get};
+use axum::{
+    Router,
+    extract::State,
+    response::{Html, IntoResponse},
+    routing::get,
+};
 
 #[derive(Template)]
-#[template(path = "root.html")]
-pub struct HelloTemplate<'a> {
-    pub _name: &'a str,
+#[template(path = "dashboard.html")]
+pub struct Dashboard {
+    pub config: String,
 }
 pub fn get_root() -> Router<AppState> {
-    let body = HelloTemplate { _name: "World" }.render().unwrap();
-    return Router::new().route("/", get(Html(body)));
+    Router::new().route("/", get(render_dashboard))
+}
+
+async fn render_dashboard(State(state): State<AppState>) -> impl IntoResponse {
+    match state.profile.lock().await.as_ref() {
+        Some(profile) => Html(
+            Dashboard {
+                config: profile.name.clone(),
+            }
+            .render()
+            .unwrap(),
+        ),
+        None => Html(
+            Dashboard {
+                config: "No Profile".to_string(),
+            }
+            .render()
+            .unwrap(),
+        ),
+    }
 }

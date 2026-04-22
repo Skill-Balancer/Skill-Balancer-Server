@@ -1,0 +1,8 @@
+{% macro card(name, id, color) %}
+  <div class="card bg-base-200 border border-base-300 shadow-sm">
+    <div class="card-body p-4">
+      <p class="text-xs uppercase tracking-widest text-base-content/40 mb-1">{{name}}</p>
+      <p id={{id}} class="text-2xl font-bold {{ color }} tabular-nums">—</p>
+    </div>
+  </div>
+{% endmacro %}

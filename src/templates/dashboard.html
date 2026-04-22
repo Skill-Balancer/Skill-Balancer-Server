@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+
+{% block title %}Training Dashboard{% endblock %}
+
+{% block content %}
+
+<!-- Header -->
+<div class="flex items-center justify-between mb-8">
+  <div>
+    <h1 class="text-2xl font-bold tracking-tight text-base-content">Training Dashboard</h1>
+    <p class="text-xs text-base-content/40 mt-0.5 uppercase tracking-widest">PPO · Live metrics</p>
+  </div>
+  {% include "live.html" %}
+</div>
+
+{% include "cards.html" %}
+
+{% include "charts.html" %}
+
+{% include "actions.html" %}
+
+{% include "sse.html" %}
+
+{% endblock %}
