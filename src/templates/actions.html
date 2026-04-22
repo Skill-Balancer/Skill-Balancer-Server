@@ -12,17 +12,10 @@
     <h2 class="text-sm font-semibold text-base-content/70 mb-2">Checkpoints</h2>
     <ul id="checkpoint-list" class="flex flex-col gap-1"></ul>
   </div>
-
-  <!-- List of Exports -->
-  <div class="flex-1">
-    <h2 class="text-sm font-semibold text-base-content/70 mb-2">Exports</h2>
-    <ul id="exports-list" class="flex flex-col gap-1"></ul>
-  </div>
 </div>
 
 <script>
   let checkpoints = [];
-  let exports = [];
 
   function renderCheckpoints() {
     const list = document.getElementById("checkpoint-list");
@@ -32,20 +25,6 @@
       <li class="flex items-center gap-2">
         <span class="text-xs text-base-content/50">${cp.model_id}</span>
         <button onclick="loadCheckpoint(\'${cp.model_id}\')" class="text-xs text-blue-500 hover:underline">Load</button>
-      </li>
-    `,
-      )
-      .join("");
-  }
-
-  function renderExports() {
-    const list = document.getElementById("exports-list");
-    list.innerHTML = exports
-      .map(
-        (exp) => `
-      <li class="flex items-center gap-2">
-        <span class="text-xs text-base-content/50">${exp.model_id}</span>
-        <a href="${exp.url}" class="text-xs text-blue-500 hover:underline">Download</a>
       </li>
     `,
       )

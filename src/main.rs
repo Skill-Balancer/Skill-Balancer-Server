@@ -51,8 +51,6 @@ async fn main() {
         .merge(routes::all_config_route::all_config_route())
         .merge(routes::model::checkpoint::checkpoint_route())
         .merge(routes::model::load::load_model_route())
-        .merge(routes::model::export::export_model_route())
-        .merge(routes::model::list_checkpoints::list_checkpoints_route())
         .merge(routes::model::list_exports::list_exports_route())
         .merge(routes::sse::metrics_route())
         .merge(routes::sse::config_route())
