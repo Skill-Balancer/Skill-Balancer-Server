@@ -166,7 +166,7 @@ impl<B: AutodiffBackend> PPOTrainer<B> {
             &self.config,
         );
         self.model = model;
-        self.memory.clear();
+        // self.memory.clear();
         let averaged = metrics.averaged();
         Some(averaged)
     }

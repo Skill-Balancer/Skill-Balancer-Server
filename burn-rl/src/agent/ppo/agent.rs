@@ -120,9 +120,9 @@ impl<E: Environment, B: AutodiffBackend, M: PPOModel<B> + AutodiffModule<B>> PPO
                         ratios.clone() * advantage_batch.clone(),
                         clipped_ratios * advantage_batch,
                     )
-                    .sum();
+                    .mean();
                     let critic_loss =
-                        MseLoss.forward(expected_return_batch, value_batch, Reduction::Sum);
+                        MseLoss.forward(expected_return_batch, value_batch, Reduction::Mean);
                     let policy_negative_entropy = -(policy_batch.clone().clamp(1e-8, 1.0).log()
                         * policy_batch) // clamp added to prevent action for being none
                         .sum_dim(1)
@@ -132,7 +132,7 @@ impl<E: Environment, B: AutodiffBackend, M: PPOModel<B> + AutodiffModule<B>> PPO
                     let policy_loss_scalar = actor_loss.clone().into_scalar().elem::<f32>();
                     let value_loss_scalar = critic_loss.clone().into_scalar().elem::<f32>();
                     let entropy_scalar =
-                        -policy_negative_entropy.clone().into_scalar().elem::<f32>();
+                        policy_negative_entropy.clone().into_scalar().elem::<f32>();
 
                     let clip_fraction_scalar = {
                         let lo = 1.0 - config.epsilon_clip;
@@ -206,14 +206,25 @@ pub(crate) fn get_gae<B: Backend>(
         let not_done = get_elem(i, &not_dones)?;
 
         running_return = reward + gamma * running_return * not_done;
-        running_advantage = reward - get_elem(i, &values)?
-            + gamma
-                * not_done
-                * (get_elem(i + 1, &values).unwrap_or(0.0) + lambda * running_advantage);
+        running_advantage = (reward + gamma * not_done * get_elem(i + 1, &values).unwrap_or(0.0)
+            - get_elem(i, &values)?)
+            + gamma * lambda * not_done * running_advantage;
 
         returns[i] = running_return;
         advantages[i] = running_advantage;
     }
+    let adv_mean = advantages.iter().sum::<f32>() / advantages.len() as f32;
+    let adv_std = (advantages
+        .iter()
+        .map(|a| (a - adv_mean).powi(2))
+        .sum::<f32>()
+        / advantages.len() as f32)
+        .sqrt()
+        .max(1e-8);
+    let advantages: Vec<f32> = advantages
+        .iter()
+        .map(|a| (a - adv_mean) / adv_std)
+        .collect();
     Some(GAEOutput::new(
         Tensor::<B, 1>::from_floats(returns.as_slice(), &Default::default())
             .reshape([returns.len(), 1]),
