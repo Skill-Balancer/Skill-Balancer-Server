@@ -268,11 +268,10 @@ fn validate_hyperparams(hp: &Option<Hyperparams>) -> Result<(), String> {
         None => {}
     }
 
-    match hp.lambda {
-        Some(lambda) if lambda >= 0.0 && lambda <= 1.0 => {}
-        Some(_) => return Err("lambda must be between 0 and 1".into()),
-        None => {}
+    if let Some(lambda) = hp.lambda && (lambda < 0.0 || lambda > 1.0){
+        return Err("lambda must be between 0 and 1".into())
     }
+
 
     match hp.batch_size {
         Some(b_size) if b_size > 0 => {}
