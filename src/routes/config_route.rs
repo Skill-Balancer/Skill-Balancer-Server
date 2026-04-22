@@ -266,21 +266,13 @@ fn validate_hyperparams(hp: &Option<Hyperparams>) -> Result<(), String> {
     let mut arr: Vec<Result<(), String>> = vec![];
 
     arr.push(range("gamma", hp.gamma, 0.0, 1.0));
-
     arr.push(range("lambda", hp.lambda, 0.0, 1.0));
-
     arr.push(positive("epsilon_clip", hp.epsilon_clip));
-
     arr.push(range("critic_weight", hp.critic_weight, 0.0, 1.0));
-
     arr.push(range("entropy_weight", hp.entropy_weight, 0.0, 1.0));
-
     arr.push(positive("batch_size", hp.batch_size));
-
     arr.push(positive("learning_rate", hp.learning_rate));
-
     arr.push(positive("epochs", hp.epochs));
-
     arr.push(positive("clip_grad", hp.clip_grad));
 
     let mut error_message: String = String::new();
