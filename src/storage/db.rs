@@ -35,7 +35,7 @@ impl DB {
 
     pub async fn sync_schema(&self) -> Result<(), DbErr> {
         self.connection
-            .get_schema_registry("Data-Collection-Rust-server::entities::*")
+            .get_schema_registry("Skill-Balancer-Server::entities::*")
             .sync(&self.connection)
             .await
     }

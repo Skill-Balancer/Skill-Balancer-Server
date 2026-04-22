@@ -32,7 +32,7 @@ async fn main() {
     let db = DB::new().await.expect("Failed to connect to database");
     db.sync_schema()
         .await
-        .expect("Failed to synchronize database schema");
+        .unwrap(); // this line does not work, and i dont know why it should crash on failed sync
 
     let state = AppState {
         profile: Arc::new(Mutex::new(None)),
