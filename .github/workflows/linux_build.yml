@@ -1,12 +1,12 @@
-name: Build macOS Binary
+name: Build Linux Binary
 
 on:
   push:
     branches: [main]
 
 jobs:
-  build-macos:
-    runs-on: macos-latest
+  build-linux:
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4

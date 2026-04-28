@@ -28,11 +28,3 @@ jobs:
         run: cargo build
       - name: Run tests
         run: cargo test
-      - name: Build releases
-        run: |
-          cargo build --release
-      - name: Upload to pull request
-        uses: actions/upload-artifact@v4
-        with:
-          name: Skill-Balancer-Server-Linux
-          path: target/release/Skill-Balancer-Server
