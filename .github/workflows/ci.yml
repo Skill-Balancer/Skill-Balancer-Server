@@ -30,6 +30,7 @@ jobs:
         run: cargo test
       - name: Add targets
         run: |
+          sudo apt install x86_64-w64-mingw32-dlltool
           rustup target add x86_64-pc-windows-gnu
       - name: Build releases
         run: |
