@@ -32,6 +32,7 @@ jobs:
         run: |
           cargo build --release
       - name: Upload to pull request
-        uses: skx/github-action-build@master
+        uses: actions/upload-artifact@v4
         with:
-          builder: .github/build
+          name: Skill-Balancer-Server-Linux
+          path: target/release/Skill-Balancer-Server

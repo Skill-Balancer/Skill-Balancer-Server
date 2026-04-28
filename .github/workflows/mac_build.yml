@@ -19,7 +19,8 @@ jobs:
       - name: Build
         run: cargo build --release
 
-      - name: Upload binary
-        uses: skx/github-action-build@master
+      - name: Upload to pull request
+        uses: actions/upload-artifact@v4
         with:
-          builder: .github/build
+          name: Skill-Balancer-Server-Apple-Mac
+          path: target/release/Skill-Balancer-Server
