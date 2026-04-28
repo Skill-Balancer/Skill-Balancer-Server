@@ -1,10 +1,8 @@
 name: Build Windows Binary
 
 on:
-  pull_request:
-    branches: [main, master]
   push:
-    branches: [main, master]
+    branches: [main]
 
 jobs:
   build-windows:
@@ -21,7 +19,7 @@ jobs:
 
       - name: Download Artifacts
         uses: actions/download-artifact@v4
-        
+
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
