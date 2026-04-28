@@ -1,6 +1,8 @@
 name: Build macOS Binary
 
 on:
+  workflow_run:
+    workflows: ["CI"]
   pull_request:
     branches: [main, master]
   push:
