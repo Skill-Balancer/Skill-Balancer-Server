@@ -1,9 +1,10 @@
 name: Build macOS Binary
 
 on:
+  pull_request:
+    branches: [main, master]
   push:
-    branches: [ main ]
-  pull_request: [ main ]
+    branches: [main, master]
 
 jobs:
   build-macos:
