@@ -1,4 +1,4 @@
-name: Build macOS Binary
+name: Build Windows Binary
 
 on:
   pull_request:
@@ -7,7 +7,7 @@ on:
     branches: [main, master]
 
 jobs:
-  build-macos:
+  build-windows:
     runs-on: windows-latest
     steps:
       - name: Checkout repo
