@@ -14,7 +14,7 @@ use serde_json::json;
 pub fn checkpoint_route() -> Router<AppState> {
     Router::new()
         .route("/checkpoint", get(list_all_checkpoints))
-        .merge(Router::new().route("/checkpoint/{id}", post(create_checkpoint)))
+        .merge(Router::new().route("/checkpoint/{id}", get(create_checkpoint)))
 }
 
 async fn create_checkpoint(
