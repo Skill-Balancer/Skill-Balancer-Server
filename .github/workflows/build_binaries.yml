@@ -36,7 +36,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
             name: Skill-Balancer-Server
-            path: artifact/Skill-Balancer-Server*
+            path: target/${{ matrix.target }}/release/Skill-Balancer-Server*
 
   build-release:
     needs: [build-binaries]
