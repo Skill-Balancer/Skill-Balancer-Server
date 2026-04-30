@@ -49,5 +49,5 @@ name = "Skill-Balancer-ubuntu-latest"
 path = "src/main.rs"
 
 [[bin]]
-name = "Skill-Balancer-mac-latest"
+name = "Skill-Balancer-macos-latest"
 path = "src/main.rs"
