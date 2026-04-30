@@ -41,7 +41,7 @@ tokio-stream = { version = "0.1", features = ["sync"] }
 futures = "0.3"
 
 [[bin]]
-name = "Skill-Balancer-windows-latest"
+name = "Skill-Balancer-windows-latest.exe"
 path = "src/main.rs"
 
 [[bin]]
