@@ -32,11 +32,19 @@ jobs:
       - name: Build
         run: cargo build --release --target ${{ matrix.target }} --bin Skill-Balancer-${{ matrix.os }}*
 
-      - name: Upload Artifacts
+      - name: Upload Artifacts Windows is ass
+        if: ${{ matrix.os == 'windows-latest' }}
+        uses: actions/upload-artifact@v4
+        with:
+            name: Skill-Balancer-${{ matrix.os }}.exe
+            path: target/${{ matrix.target }}/release/Skill-Balancer.exe
+    
+      - name: Upload Artifacts the rest
+        if: ${{ matrix.os != 'windows-latest' }}
         uses: actions/upload-artifact@v4
         with:
             name: Skill-Balancer-${{ matrix.os }}
-            path: target/${{ matrix.target }}/release/Skill-Balancer*
+            path: target/${{ matrix.target }}/release/Skill-Balancer
 
   build-release:
     needs: [build-binaries]
