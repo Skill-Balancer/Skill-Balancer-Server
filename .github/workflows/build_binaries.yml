@@ -35,8 +35,8 @@ jobs:
       - name: Upload Artifacts
         uses: actions/upload-artifact@v7
         with:
-            name: Skill-Balancer-Server-${{ matrix.os }}-${{ matrix.version }}
-            path: ${{ github.workspace }}/artifact/**/*
+            name: Skill-Balancer-Server-${{ matrix.os }}
+            path: artifact/Skill-Balancer-Server
 
   build-release:
     needs: [build-binaries]
