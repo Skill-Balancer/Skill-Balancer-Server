@@ -33,7 +33,7 @@ jobs:
         run: cargo build --release --target ${{ matrix.target }}
 
       - name: Upload Artifacts
-        uses: actions/upload-artifact@v7
+        uses: actions/download-artifact@v4
         with:
             name: Skill-Balancer-Server-${{ matrix.os }}
             path: artifact/Skill-Balancer-Server
