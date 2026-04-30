@@ -37,14 +37,14 @@ jobs:
         uses: actions/upload-artifact@v7
         with:
             name: Skill-Balancer-${{ matrix.os }}.exe
-            path: target/${{ matrix.target }}/release/Skill-Balancer-server.exe
+            path: target/${{ matrix.target }}/release/Skill-Balancer-${{ matrix.os }}.exe
     
       - name: Upload Artifacts the rest
         if: ${{ matrix.os != 'windows-latest' }}
         uses: actions/upload-artifact@v7
         with:
             name: Skill-Balancer-${{ matrix.os }}
-            path: target/${{ matrix.target }}/release/Skill-Balancer-server
+            path: target/${{ matrix.target }}/release/Skill-Balancer-${{ matrix.os }}
 
   build-release:
     needs: [build-binaries]
