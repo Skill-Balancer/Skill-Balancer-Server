@@ -30,7 +30,7 @@ jobs:
         run: rustup target add ${{ matrix.target }}
 
       - name: Build
-        run: cargo build --release --target ${{ matrix.target }} -o Skill-Balancer-${{ matrix.os }}
+        run: cargo build --release --target ${{ matrix.target }}
 
       - name: rename to OS
         run: mv target/${{ matrix.target }}/release/Skill-Balancer-Server* target/${{ matrix.target }}/release/Skill-Balancer-${{ matrix.os }}
