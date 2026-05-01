@@ -28,18 +28,37 @@ jobs:
         run: rustup target add ${{ matrix.target }}
 
       - name: Build
-        run: cargo build --release --target ${{ matrix.target }}
+        run: cargo build --release --target ${{ matrix.target }} --bin Skill-Balancer-${{ matrix.os }}
 
-      - name: Upload Artifacts
-        uses: actions/upload-artifact@v4
+      - name: Upload Artifacts Windows is ass
+        if: ${{ matrix.os == 'windows-latest' }}
+        uses: actions/upload-artifact@v7
         with:
-          name: Skill-Balancer-Server-${{ matrix.target }}
-          path: target/${{ matrix.target }}/release/Skill-Balancer-server*
+            name: Skill-Balancer-${{ matrix.os }}.exe
+            path: target/${{ matrix.target }}/release/Skill-Balancer-${{ matrix.os }}.exe
+    
+      - name: Upload Artifacts the rest
+        if: ${{ matrix.os != 'windows-latest' }}
+        uses: actions/upload-artifact@v7
+        with:
+            name: Skill-Balancer-${{ matrix.os }}
+            path: target/${{ matrix.target }}/release/Skill-Balancer-${{ matrix.os }}
 
+  build-release:
+    needs: [build-binaries]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Get Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: ./artifacts
+         
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          files: target/${{ matrix.target }}/release/Skill-Balancer-Server*
+          draft: false
+          prerelease: true
+          files: target/${{ matrix.target }}/release/Skill-Balancer-*
           tag_name: "Skill Balancer Server Binaries"
           body: "Automated release of ${{ github.ref_name }}."
         env:

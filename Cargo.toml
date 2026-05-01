@@ -39,3 +39,15 @@ colored = "3.1.1"
 num = "0.4.3"
 tokio-stream = { version = "0.1", features = ["sync"] }
 futures = "0.3"
+
+[[bin]]
+name = "Skill-Balancer-windows-latest"
+path = "src/main.rs"
+
+[[bin]]
+name = "Skill-Balancer-ubuntu-latest"
+path = "src/main.rs"
+
+[[bin]]
+name = "Skill-Balancer-macos-latest"
+path = "src/main.rs"
