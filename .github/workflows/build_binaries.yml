@@ -28,7 +28,7 @@ jobs:
         run: rustup target add ${{ matrix.target }}
 
       - name: Build
-        run: cargo build --release --target ${{ matrix.target }} --bin Skill-Balancer-${{ matrix.os }}
+        run: cargo build --release --target ${{ matrix.target }}
 
       - name: Upload Artifacts Windows is ass
         if: ${{ matrix.os == 'windows-latest' }}
@@ -36,7 +36,7 @@ jobs:
         with:
             name: Skill-Balancer-${{ matrix.os }}.exe
             path: target/${{ matrix.target }}/release/Skill-Balancer-${{ matrix.os }}.exe
-    
+
       - name: Upload Artifacts the rest
         if: ${{ matrix.os != 'windows-latest' }}
         uses: actions/upload-artifact@v7
@@ -52,7 +52,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           path: ./artifacts
-         
+
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
